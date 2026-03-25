@@ -23,87 +23,87 @@ export default function LoginPage() {
       background: 'var(--color-bg)',
     }}>
       {/* Panneau gauche — décoratif */}
-            <div className="hidden lg:flex" style={{
-              width: '45%',
-              background: 'var(--color-surface)',
-              borderRight: '1px solid var(--color-border)',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              padding: '3rem',
-              position: 'relative',
-              overflow: 'hidden',
-              height: '100vh',
-            }}>
-              {/* Grille de points */}
-              <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.05 }}>
-                <defs>
-                  <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
-                    <circle cx="1" cy="1" r="1" fill="#6366f1" />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#dots)" />
-              </svg>
-              <div style={{ position: 'absolute', bottom: '15%', left: '-10%', width: '70%', height: '70%', background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
-      
-              {/* Logo */}
-              <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
-                <Logo size={36} />
-                <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text)' }}>
-                  Savoir<span style={{ color: 'var(--color-primary)' }}>Vivant</span>
-                </span>
-              </Link>
-      
-              {/* Centre — livres flottants + stats */}
-              <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2.5rem' }}>
-      
-                {/* Cartes livres */}
-                <div style={{ position: 'relative', width: '280px', height: '200px' }}>
-                  {[
-                    { title: 'Suites Numériques', subject: 'Mathématiques', color: 'linear-gradient(135deg,#6366f1,#4338ca)', rotate: '-6deg', left: '0px', top: '20px' },
-                    { title: 'Limites de Fonctions', subject: 'Analyse', color: 'linear-gradient(135deg,#0f766e,#0d9488)', rotate: '3deg', left: '80px', top: '0px' },
-                    { title: 'Primitives & Intégrales', subject: 'Calcul', color: 'linear-gradient(135deg,#b45309,#d97706)', rotate: '-2deg', left: '155px', top: '15px' },
-                  ].map((book) => (
-                    <div key={book.title} style={{
-                      position: 'absolute',
-                      left: book.left,
-                      top: book.top,
-                      width: '110px',
-                      transform: `rotate(${book.rotate})`,
-                      background: book.color,
-                      borderRadius: '8px',
-                      padding: '1rem 0.75rem',
-                      aspectRatio: '2/3',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-end',
-                      boxShadow: '0 16px 40px rgba(0,0,0,0.4)',
-                    }}>
-                      <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>{book.subject}</div>
-                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', color: '#fff', fontWeight: 700, lineHeight: 1.2 }}>{book.title}</div>
-                    </div>
-                  ))}
-                </div>
-      
-                {/* Stats */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', width: '100%' }}>
-                  {[
-                    { value: '12+', label: 'Livres' },
-                    { value: '3', label: 'Collections' },
-                    { value: '∞', label: 'Accès abonnement' },
-                  ].map(stat => (
-                    <div key={stat.label} style={{
-                      background: 'rgba(99,102,241,0.06)',
-                      border: '1px solid rgba(99,102,241,0.15)',
-                      borderRadius: '12px',
-                      padding: '1rem',
-                      textAlign: 'center',
-                    }}>
-                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-text)', marginBottom: '2px' }}>{stat.value}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
+          <div className="hidden lg:flex" style={{
+            width: '45%',
+            background: 'var(--color-surface)',
+            borderRight: '1px solid var(--color-border)',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: '3rem',
+            position: 'relative',
+            overflow: 'hidden',
+            height: '100vh',
+          }}>
+            {/* Grille de points */}
+            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.05 }}>
+              <defs>
+                <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+                  <circle cx="1" cy="1" r="1" fill="#6366f1" />
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#dots)" />
+            </svg>
+            <div style={{ position: 'absolute', bottom: '15%', left: '-10%', width: '70%', height: '70%', background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+    
+            {/* Logo */}
+            <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
+              <Logo size={36} />
+              <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text)' }}>
+                Savoir<span style={{ color: 'var(--color-primary)' }}>Vivant</span>
+              </span>
+            </Link>
+    
+            {/* Centre — livres flottants + stats */}
+            <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2.5rem' }}>
+    
+              {/* Cartes livres */}
+              <div style={{ position: 'relative', width: '280px', height: '200px' }}>
+                {[
+                  { title: 'Suites Numériques', subject: 'Mathématiques', color: 'linear-gradient(135deg,#6366f1,#4338ca)', rotate: '-6deg', left: '0px', top: '20px' },
+                  { title: 'Limites de Fonctions', subject: 'Analyse', color: 'linear-gradient(135deg,#0f766e,#0d9488)', rotate: '3deg', left: '80px', top: '0px' },
+                  { title: 'Primitives & Intégrales', subject: 'Calcul', color: 'linear-gradient(135deg,#b45309,#d97706)', rotate: '-2deg', left: '155px', top: '15px' },
+                ].map((book) => (
+                  <div key={book.title} style={{
+                    position: 'absolute',
+                    left: book.left,
+                    top: book.top,
+                    width: '110px',
+                    transform: `rotate(${book.rotate})`,
+                    background: book.color,
+                    borderRadius: '8px',
+                    padding: '1rem 0.75rem',
+                    aspectRatio: '2/3',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    boxShadow: '0 16px 40px rgba(0,0,0,0.4)',
+                  }}>
+                    <div style={{ fontSize: '0.5rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '3px' }}>{book.subject}</div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '0.75rem', color: '#fff', fontWeight: 700, lineHeight: 1.2 }}>{book.title}</div>
+                  </div>
+                ))}
               </div>
+    
+              {/* Stats */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', width: '100%' }}>
+                {[
+                  { value: '12+', label: 'Livres' },
+                  { value: '3', label: 'Collections' },
+                  { value: '∞', label: 'Accès abonnement' },
+                ].map(stat => (
+                  <div key={stat.label} style={{
+                    background: 'rgba(99,102,241,0.06)',
+                    border: '1px solid rgba(99,102,241,0.15)',
+                    borderRadius: '12px',
+                    padding: '1rem',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-text)', marginBottom: '2px' }}>{stat.value}</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
       
               {/* Citation bas */}
               <div style={{ position: 'relative', zIndex: 1 }}>
