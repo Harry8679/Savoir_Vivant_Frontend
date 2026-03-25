@@ -51,7 +51,7 @@ export default function Navbar() {
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-6">
-          {[['Catalogue', '/catalogue'], ['Connexion', '/login']].map(([label, href]) => (
+          {[['Catalogue', '/catalogue'], ['Connexion', '/connexion']].map(([label, href]) => (
             <Link key={label} to={href}
               style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--color-text-muted)', transition: 'color 0.2s', textDecoration: 'none' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
@@ -97,8 +97,8 @@ export default function Navbar() {
         }}>
           <Link to="/catalogue" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', textDecoration: 'none' }}>Catalogue</Link>
           <a href="#offres" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Offres</a>
-          <Link to="/login" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', textDecoration: 'none' }}>Connexion</Link>
-          <Link to="/register" onClick={() => setOpen(false)} style={{ padding: '0.6rem 1rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '6px', textAlign: 'center', fontSize: '0.9rem', textDecoration: 'none' }}>Commencer</Link>
+          <Link to="/connexion" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', textDecoration: 'none' }}>Connexion</Link>
+          <Link to="/inscription" onClick={() => setOpen(false)} style={{ padding: '0.6rem 1rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '6px', textAlign: 'center', fontSize: '0.9rem', textDecoration: 'none' }}>Commencer</Link>
         </div>
       )}
     </nav>
