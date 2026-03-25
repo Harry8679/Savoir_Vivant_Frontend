@@ -22,51 +22,84 @@ export default function LoginPage() {
       display: 'flex',
       background: 'var(--color-bg)',
     }}>
-      {/* Panneau gauche — décoratif */}
-      <div className="hidden lg:flex" style={{
-        width: '45%',
-        background: 'var(--color-surface)',
-        borderRight: '1px solid var(--color-border)',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '3rem',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Grille de points */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.05 }}>
-          <defs>
-            <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
-              <circle cx="1" cy="1" r="1" fill="#6366f1" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#dots)" />
-        </svg>
-        {/* Lueur */}
-        <div style={{ position: 'absolute', bottom: '10%', left: '-10%', width: '60%', height: '60%', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+      {/* Panneau gauche */}
+<div className="hidden lg:flex" style={{
+  width: '45%',
+  background: 'var(--color-surface)',
+  borderRight: '1px solid var(--color-border)',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+  padding: '3rem',
+  position: 'relative',
+  overflow: 'hidden',
+  height: '100vh',
+}}>
+  <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.05 }}>
+    <defs>
+      <pattern id="dots2" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+        <circle cx="1" cy="1" r="1" fill="#6366f1" />
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#dots2)" />
+  </svg>
+  <div style={{ position: 'absolute', top: '20%', right: '-10%', width: '60%', height: '60%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-        {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
-          <Logo size={36} />
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text)' }}>
-            Savoir<span style={{ color: 'var(--color-primary)' }}>Vivant</span>
-          </span>
-        </Link>
+  {/* Logo */}
+  <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
+    <Logo size={36} />
+    <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text)' }}>
+      Savoir<span style={{ color: 'var(--color-primary)' }}>Vivant</span>
+    </span>
+  </Link>
 
-        {/* Citation */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <blockquote style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, fontStyle: 'italic', lineHeight: 1.3, color: 'var(--color-text)', marginBottom: '1.5rem' }}>
-            "Le savoir est la seule richesse qui s'accroît quand on la partage."
-          </blockquote>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {['Mathématiques', 'Physique', 'Informatique', 'Langues'].map(tag => (
-              <span key={tag} style={{ fontSize: '0.7rem', padding: '4px 10px', border: '1px solid var(--color-border)', borderRadius: '100px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                {tag}
-              </span>
-            ))}
+  {/* Centre — bénéfices visuels */}
+  <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1.25rem' }}>
+
+    <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-text)', lineHeight: 1.2, marginBottom: '0.5rem' }}>
+      Rejoignez une<br />
+      <span style={{ fontStyle: 'italic', color: 'var(--color-primary)' }}>communauté de curieux</span>
+    </h2>
+
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {[
+        { icon: '📚', title: 'Bibliothèque complète', desc: 'Accès à tous les livres avec l\'abonnement mensuel ou annuel' },
+        { icon: '📱', title: 'Web & Mobile', desc: 'Lisez sur tous vos appareils, même sans connexion' },
+        { icon: '♾️', title: 'Achat définitif', desc: 'Un livre acheté reste vôtre pour toujours' },
+        { icon: '🚀', title: 'Contenu en croissance', desc: 'De nouveaux livres ajoutés chaque mois dans toutes les collections' },
+      ].map(({ icon, title, desc }) => (
+        <div key={title} style={{
+          display: 'flex',
+          gap: '14px',
+          alignItems: 'flex-start',
+          padding: '0.875rem 1rem',
+          background: 'rgba(99,102,241,0.05)',
+          border: '1px solid rgba(99,102,241,0.1)',
+          borderRadius: '12px',
+        }}>
+          <span style={{ fontSize: '1.25rem', flexShrink: 0, marginTop: '1px' }}>{icon}</span>
+          <div>
+            <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '2px' }}>{title}</div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', lineHeight: 1.5, fontWeight: 500 }}>{desc}</div>
           </div>
         </div>
-      </div>
+      ))}
+    </div>
+  </div>
+
+  {/* Bas — offre mise en avant */}
+  <div style={{ position: 'relative', zIndex: 1, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.2)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+    <div style={{ fontSize: '0.7rem', color: '#f59e0b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>
+      Offre abonnement
+    </div>
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-text)' }}>9€</span>
+      <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>/ mois · ou 79€ / an</span>
+    </div>
+    <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
+      Accès illimité à toute la bibliothèque SavoirVivant
+    </div>
+  </div>
+</div>
 
       {/* Panneau droit — formulaire */}
       <div style={{
