@@ -116,7 +116,7 @@ export default function RegisterPage() {
           </h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '2.5rem', fontWeight: 500 }}>
             Déjà inscrit ?{' '}
-            <Link to="/login" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 700 }}
+            <Link to="/connexion" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 700 }}
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
               Se connecter
