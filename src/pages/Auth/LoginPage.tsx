@@ -91,7 +91,7 @@ export default function LoginPage() {
           </h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '2.5rem', fontWeight: 500 }}>
             Pas encore de compte ?{' '}
-            <Link to="/register" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 700 }}
+            <Link to="/inscription" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 700 }}
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
               S'inscrire
