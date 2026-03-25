@@ -5,6 +5,7 @@ import RegisterPage from '@pages/Auth/RegisterPage'
 import ProfilePage from '@pages/Profile/ProfilePage'
 import CataloguePage from '@pages/Catalogue/CataloguePage'
 import LibraryPage from '@pages/Library/LibraryPage'
+import NotFoundPage from '@pages/NotFound/NotFoundPage'
 import RootLayout from '@components/layout/RootLayout'
 
 export const router = createBrowserRouter([
@@ -14,10 +15,13 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'catalogue', element: <CataloguePage /> },
-      { path: 'connexion', element: <LoginPage /> },
-      { path: 'inscription', element: <RegisterPage /> },
-      { path: 'profil', element: <ProfilePage /> },
-      { path: 'librarie', element: <LibraryPage /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'library', element: <LibraryPage /> },
     ],
   },
+  { path: '/login', element: <LoginPage /> },
+  { path: '/connexion', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
+  { path: '/inscription', element: <RegisterPage /> },
+  { path: '*', element: <NotFoundPage /> },
 ])
