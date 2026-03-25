@@ -67,7 +67,7 @@ export default function CguPage() {
 
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
             <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-              Dernière mise à jour : <strong style={{ color: 'var(--color-text)' }}>25 mars 2025</strong>
+              Dernière mise à jour : <strong style={{ color: 'var(--color-text)' }}>25 mars 2026</strong>
             </span>
             <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
               Version : <strong style={{ color: 'var(--color-text)' }}>1.0</strong>
