@@ -7,12 +7,15 @@ import { router } from '@router/index'
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5,
-      retry: 1,
-    },
+    queries: { staleTime: 1000 * 60 * 5, retry: 1 },
   },
 })
+
+// Applique le thème sauvegardé avant le premier rendu
+const saved = localStorage.getItem('savoirvivant-theme')
+const parsed = saved ? JSON.parse(saved) : null
+const initialTheme = parsed?.state?.theme ?? 'dark'
+document.documentElement.setAttribute('data-theme', initialTheme)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
