@@ -66,7 +66,7 @@ export default function Navbar() {
             Offres
           </a>
           <ThemeToggle />
-          <Link to="/register"
+          <Link to="/inscription"
             style={{ fontSize: '0.875rem', padding: '0.5rem 1.25rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '6px', fontWeight: 500, transition: 'background 0.2s', textDecoration: 'none' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-hover)')}
             onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}>
