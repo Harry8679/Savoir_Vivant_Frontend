@@ -107,7 +107,7 @@ export default function NotFoundPage() {
 
         {/* Liens utiles */}
         <div style={{ marginTop: '3rem', display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-          {[['Connexion', '/login'], ['Inscription', '/register'], ['CGU', '/cgu']].map(([label, href]) => (
+          {[['Connexion', '/connexion'], ['Inscription', '/register'], ['CGU', '/cgu']].map(([label, href]) => (
             <Link key={label} to={href} style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', textDecoration: 'none', fontWeight: 600, transition: 'color 0.2s' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-dim)')}>
