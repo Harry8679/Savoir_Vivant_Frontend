@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
           {step === 'email' ? (
             <>
               {/* Flèche retour */}
-              <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontWeight: 600, marginBottom: '2rem', transition: 'color 0.2s' }}
+              <Link to="/connexion" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontWeight: 600, marginBottom: '2rem', transition: 'color 0.2s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
                 onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
