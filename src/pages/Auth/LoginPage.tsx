@@ -1,61 +1,28 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Logo from '@components/ui/Logo'
+import { useThemeStore } from '@store/themeStore'
 
-type PasswordStrength = 'faible' | 'moyen' | 'fort' | null
-
-function getStrength(pwd: string): PasswordStrength {
-  if (!pwd) return null
-  if (pwd.length < 6) return 'faible'
-  if (pwd.length < 10 || !/[0-9]/.test(pwd) || !/[^a-zA-Z0-9]/.test(pwd)) return 'moyen'
-  return 'fort'
-}
-
-const strengthColor: Record<string, string> = {
-  faible: '#ef4444',
-  moyen: '#f59e0b',
-  fort: '#10b981',
-}
-
-export default function RegisterPage() {
-  const [show, setShow] = useState({ password: false, confirm: false })
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
+export default function LoginPage() {
+  const { theme } = useThemeStore()
+  const isDark = theme === 'dark'
+  const [showPassword, setShowPassword] = useState(false)
+  const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const strength = getStrength(form.password)
-  const passwordMatch = form.confirm && form.password === form.confirm
-  const passwordMismatch = form.confirm && form.password !== form.confirm
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (form.password !== form.confirm) {
-      setError('Les mots de passe ne correspondent pas.')
-      return
-    }
-    setError('')
     setLoading(true)
     setTimeout(() => setLoading(false), 1500)
   }
 
-  const inputStyle = {
-    width: '100%',
-    padding: '0.875rem 1rem',
-    background: 'var(--color-surface)',
-    border: '1px solid var(--color-border)',
-    borderRadius: '10px',
-    color: 'var(--color-text)',
-    fontSize: '0.95rem',
-    fontFamily: 'var(--font-body)',
-    fontWeight: 500,
-    outline: 'none',
-    transition: 'border-color 0.2s',
-  }
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--color-bg)' }}>
-
-      {/* Panneau gauche */}
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      background: 'var(--color-bg)',
+    }}>
+      {/* Panneau gauche — décoratif */}
       <div className="hidden lg:flex" style={{
         width: '45%',
         background: 'var(--color-surface)',
@@ -66,16 +33,19 @@ export default function RegisterPage() {
         position: 'relative',
         overflow: 'hidden',
       }}>
+        {/* Grille de points */}
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.05 }}>
           <defs>
-            <pattern id="dots2" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+            <pattern id="dots" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
               <circle cx="1" cy="1" r="1" fill="#6366f1" />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#dots2)" />
+          <rect width="100%" height="100%" fill="url(#dots)" />
         </svg>
-        <div style={{ position: 'absolute', top: '15%', right: '-10%', width: '60%', height: '60%', background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        {/* Lueur */}
+        <div style={{ position: 'absolute', bottom: '10%', left: '-10%', width: '60%', height: '60%', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
+        {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', position: 'relative', zIndex: 1 }}>
           <Logo size={36} />
           <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text)' }}>
@@ -83,26 +53,31 @@ export default function RegisterPage() {
           </span>
         </Link>
 
+        {/* Citation */}
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-            {[
-              { icon: '📚', text: 'Accès à toute la bibliothèque avec l\'abonnement' },
-              { icon: '📱', text: 'Lecture sur web et application mobile' },
-              { icon: '♾️', text: 'Achat unique = accès illimité à vie' },
-              { icon: '🚀', text: 'Nouveaux livres ajoutés chaque mois' },
-            ].map(({ icon, text }) => (
-              <div key={text} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '1.1rem' }}>{icon}</span>
-                <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>{text}</span>
-              </div>
+          <blockquote style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 700, fontStyle: 'italic', lineHeight: 1.3, color: 'var(--color-text)', marginBottom: '1.5rem' }}>
+            "Le savoir est la seule richesse qui s'accroît quand on la partage."
+          </blockquote>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {['Mathématiques', 'Physique', 'Informatique', 'Langues'].map(tag => (
+              <span key={tag} style={{ fontSize: '0.7rem', padding: '4px 10px', border: '1px solid var(--color-border)', borderRadius: '100px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                {tag}
+              </span>
             ))}
           </div>
         </div>
       </div>
 
       {/* Panneau droit — formulaire */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 2rem' }}>
-
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '3rem 2rem',
+      }}>
+        {/* Logo mobile */}
         <Link to="/" className="flex lg:hidden items-center gap-2 mb-8" style={{ textDecoration: 'none' }}>
           <Logo size={32} />
           <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-text)' }}>
@@ -110,38 +85,20 @@ export default function RegisterPage() {
           </span>
         </Link>
 
-        <div style={{ width: '100%', maxWidth: '440px' }}>
+        <div style={{ width: '100%', maxWidth: '420px' }}>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
-            Créer un compte
+            Bon retour !
           </h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', marginBottom: '2.5rem', fontWeight: 500 }}>
-            Déjà inscrit ?{' '}
-            <Link to="/login" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 700 }}
+            Pas encore de compte ?{' '}
+            <Link to="/register" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 700 }}
               onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
               onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
-              Se connecter
+              S'inscrire
             </Link>
           </p>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-            {/* Nom */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Nom complet
-              </label>
-              <input
-                type="text"
-                placeholder="Harry MacCode"
-                value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
-                required
-                style={inputStyle}
-                onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
-              />
-            </div>
-
             {/* Email */}
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -153,7 +110,18 @@ export default function RegisterPage() {
                 value={form.email}
                 onChange={e => setForm({ ...form, email: e.target.value })}
                 required
-                style={inputStyle}
+                style={{
+                  width: '100%', padding: '0.875rem 1rem',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '10px',
+                  color: 'var(--color-text)',
+                  fontSize: '0.95rem',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 500,
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                }}
                 onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
                 onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
               />
@@ -161,103 +129,45 @@ export default function RegisterPage() {
 
             {/* Mot de passe */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Mot de passe
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  Mot de passe
+                </label>
+                <Link to="/forgot-password" style={{ fontSize: '0.8rem', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600 }}>
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <div style={{ position: 'relative' }}>
                 <input
-                  type={show.password ? 'text' : 'password'}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   required
-                  style={{ ...inputStyle, paddingRight: '3rem' }}
+                  style={{
+                    width: '100%', padding: '0.875rem 3rem 0.875rem 1rem',
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '10px',
+                    color: 'var(--color-text)',
+                    fontSize: '0.95rem',
+                    fontFamily: 'var(--font-body)',
+                    fontWeight: 500,
+                    outline: 'none',
+                    transition: 'border-color 0.2s',
+                  }}
                   onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
                   onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
                 />
-                <button type="button" onClick={() => setShow(s => ({ ...s, password: !s.password }))}
-                  style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 0, display: 'flex' }}>
-                  {show.password ? <EyeOff /> : <EyeOn />}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 0, display: 'flex', alignItems: 'center' }}
+                >
+                  {showPassword ? <EyeOff /> : <EyeOn />}
                 </button>
               </div>
-
-              {/* Barre de force */}
-              {strength && (
-                <div style={{ marginTop: '0.6rem' }}>
-                  <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                    {(['faible', 'moyen', 'fort'] as const).map((level, i) => {
-                      const levels = ['faible', 'moyen', 'fort']
-                      const active = levels.indexOf(strength) >= i
-                      return (
-                        <div key={level} style={{
-                          flex: 1, height: '4px', borderRadius: '2px',
-                          background: active ? strengthColor[strength] : 'var(--color-border)',
-                          transition: 'background 0.3s',
-                        }} />
-                      )
-                    })}
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: strengthColor[strength], fontWeight: 600 }}>
-                    Sécurité : {strength}
-                  </span>
-                </div>
-              )}
             </div>
-
-            {/* Confirmation */}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                Confirmer le mot de passe
-              </label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  type={show.confirm ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={form.confirm}
-                  onChange={e => setForm({ ...form, confirm: e.target.value })}
-                  required
-                  style={{
-                    ...inputStyle,
-                    paddingRight: '3rem',
-                    borderColor: passwordMismatch ? '#ef4444' : passwordMatch ? '#10b981' : 'var(--color-border)',
-                  }}
-                  onFocus={e => (e.target.style.borderColor = passwordMismatch ? '#ef4444' : 'var(--color-primary)')}
-                  onBlur={e => (e.target.style.borderColor = passwordMismatch ? '#ef4444' : passwordMatch ? '#10b981' : 'var(--color-border)')}
-                />
-                <button type="button" onClick={() => setShow(s => ({ ...s, confirm: !s.confirm }))}
-                  style={{ position: 'absolute', right: '1rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 0, display: 'flex' }}>
-                  {show.confirm ? <EyeOff /> : <EyeOn />}
-                </button>
-              </div>
-              {passwordMismatch && (
-                <p style={{ fontSize: '0.78rem', color: '#ef4444', marginTop: '0.4rem', fontWeight: 600 }}>
-                  Les mots de passe ne correspondent pas
-                </p>
-              )}
-              {passwordMatch && (
-                <p style={{ fontSize: '0.78rem', color: '#10b981', marginTop: '0.4rem', fontWeight: 600 }}>
-                  Les mots de passe correspondent
-                </p>
-              )}
-            </div>
-
-            {/* Erreur globale */}
-            {error && (
-              <div style={{ padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', fontSize: '0.85rem', color: '#ef4444', fontWeight: 600 }}>
-                {error}
-              </div>
-            )}
-
-            {/* CGU */}
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
-              <input type="checkbox" required style={{ marginTop: '2px', accentColor: 'var(--color-primary)', width: '15px', height: '15px', flexShrink: 0 }} />
-              <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', lineHeight: 1.5, fontWeight: 500 }}>
-                J'accepte les{' '}
-                <Link to="/cgu" style={{ color: 'var(--color-primary)', fontWeight: 700, textDecoration: 'none' }}>conditions d'utilisation</Link>
-                {' '}et la{' '}
-                <Link to="/confidentialite" style={{ color: 'var(--color-primary)', fontWeight: 700, textDecoration: 'none' }}>politique de confidentialité</Link>
-              </span>
-            </label>
 
             {/* Submit */}
             <button
@@ -272,12 +182,12 @@ export default function RegisterPage() {
                 fontFamily: 'var(--font-body)',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s',
-                marginTop: '0.25rem',
+                marginTop: '0.5rem',
               }}
               onMouseEnter={e => { if (!loading) e.currentTarget.style.background = 'var(--color-primary-hover)' }}
               onMouseLeave={e => { if (!loading) e.currentTarget.style.background = 'var(--color-primary)' }}
             >
-              {loading ? 'Création du compte...' : 'Créer mon compte'}
+              {loading ? 'Connexion...' : 'Se connecter'}
             </button>
           </form>
         </div>
