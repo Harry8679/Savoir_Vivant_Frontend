@@ -1,11 +1,6 @@
-function App() {
-  return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <h1 className="text-4xl font-bold text-white">
-        Savoir<span className="text-indigo-400">Vivant</span>
-      </h1>
-    </div>
-  )
-}
+import { RouterProvider } from 'react-router-dom'
+import { router } from '@router/index'
 
-export default App;
+export default function App() {
+  return <RouterProvider router={router} />
+}
