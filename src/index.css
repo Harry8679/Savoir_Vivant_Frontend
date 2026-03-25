@@ -1,5 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&display=swap');
 
 @theme {
   --color-primary: #6366f1;
@@ -12,22 +12,33 @@
   --color-text: #eef2f7;
   --color-text-muted: #6b7fa3;
   --color-text-dim: #3a4a63;
-
   --font-display: 'Playfair Display', Georgia, serif;
-  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+  --font-sans: 'Nunito', system-ui, sans-serif;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Nunito', system-ui, sans-serif;
+  }
 
-html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+  }
 
-body {
-  background-color: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-body);
-  font-weight: 300;
-  -webkit-font-smoothing: antialiased;
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Nunito', system-ui, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
 }
+
+/* ... reste inchangé */
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
@@ -46,10 +57,11 @@ body {
   50%       { transform: translateY(-12px); }
 }
 
-.animate-fade-up   { animation: fadeUp 0.7s ease forwards; }
-.animate-fade-in   { animation: fadeIn 0.9s ease forwards; }
-.animate-shimmer   { animation: shimmer 3s ease-in-out infinite; }
-.animate-float     { animation: floatY 6s ease-in-out infinite; }
+.animate-fade-up { animation: fadeUp 0.7s ease forwards; }
+.animate-fade-in { animation: fadeIn 0.9s ease forwards; }
+.animate-shimmer { animation: shimmer 3s ease-in-out infinite; }
+.animate-float   { animation: floatY 6s ease-in-out infinite; }
+
 .delay-100 { animation-delay: 0.1s; }
 .delay-200 { animation-delay: 0.2s; }
 .delay-300 { animation-delay: 0.3s; }
