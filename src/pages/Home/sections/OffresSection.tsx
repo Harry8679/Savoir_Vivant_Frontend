@@ -42,7 +42,8 @@ const offres = [
 
 export default function OffresSection() {
   return (
-    <section id="offres" style={{ padding: '7rem 0', background: 'var(--color-surface)', margin: '0 -2rem', padding: '7rem 2rem' }}>
+    // <section id="offres" style={{ padding: '7rem 0', background: 'var(--color-surface)', margin: '0 -2rem', padding: '7rem 2rem' }}>
+    <section id="offres" style={{ background: 'var(--color-surface)', margin: '0 -3rem', padding: '7rem 3rem' }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
 
         {/* Header centré */}
