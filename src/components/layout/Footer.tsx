@@ -15,10 +15,10 @@ const footerLinks = {
     { label: 'Abonnement annuel', href: '#offres' },
   ],
   Compte: [
-    { label: 'Connexion', href: '/login' },
-    { label: 'Inscription', href: '/register' },
-    { label: 'Mon profil', href: '/profile' },
-    { label: 'Ma bibliothèque', href: '/library' },
+    { label: 'Connexion', href: '/connexion' },
+    { label: 'Inscription', href: '/inscription' },
+    { label: 'Mon profil', href: '/profil' },
+    { label: 'Ma bibliothèque', href: '/librarie' },
   ],
 }
 
