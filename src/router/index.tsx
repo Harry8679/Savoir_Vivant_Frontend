@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
       { path: 'library', element: <LibraryPage /> },
     ],
   },
-  { path: '/login', element: <LoginPage /> },
+  { path: '/connexion', element: <LoginPage /> },
   { path: '/connexion', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   { path: '/inscription', element: <RegisterPage /> },
