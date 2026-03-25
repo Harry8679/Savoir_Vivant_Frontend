@@ -138,7 +138,7 @@ export default function ConfidentialitePage() {
 
         {/* Footer */}
         <div style={{ marginTop: '4rem', paddingTop: '2rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', fontWeight: 500 }}>© 2025 SavoirVivant</span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', fontWeight: 500 }}>© 2026 SavoirVivant</span>
           <Link to="/cgu" style={{ fontSize: '0.8rem', color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600 }}>
             Conditions générales d'utilisation →
           </Link>
