@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Logo from '@components/ui/Logo'
-import { useThemeStore } from '@store/themeStore'
+// import { useThemeStore } from '@store/themeStore'
 
 export default function LoginPage() {
-  const { theme } = useThemeStore()
-  const isDark = theme === 'dark'
+  // const { theme } = useThemeStore()
+  // const isDark = theme === 'dark'
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
