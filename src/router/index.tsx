@@ -14,10 +14,10 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       { path: 'catalogue', element: <CataloguePage /> },
-      { path: 'login', element: <LoginPage /> },
-      { path: 'register', element: <RegisterPage /> },
-      { path: 'profile', element: <ProfilePage /> },
-      { path: 'library', element: <LibraryPage /> },
+      { path: 'connexion', element: <LoginPage /> },
+      { path: 'inscription', element: <RegisterPage /> },
+      { path: 'profil', element: <ProfilePage /> },
+      { path: 'librarie', element: <LibraryPage /> },
     ],
   },
 ])
