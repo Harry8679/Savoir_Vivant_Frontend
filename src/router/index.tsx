@@ -5,8 +5,9 @@ import RegisterPage from '@pages/Auth/RegisterPage'
 import ProfilePage from '@pages/Profile/ProfilePage'
 import CataloguePage from '@pages/Catalogue/CataloguePage'
 import LibraryPage from '@pages/Library/LibraryPage'
-import NotFoundPage from '@pages/NotFound/NotFoundPage'
+// import NotFoundPage from '@pages/NotFound/NotFoundPage'
 import RootLayout from '@components/layout/RootLayout'
+import NotFoundPage from '@/pages/NotFound/NotFoundPage'
 
 export const router = createBrowserRouter([
   {
