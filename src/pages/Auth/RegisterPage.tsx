@@ -54,8 +54,6 @@ export default function RegisterPage() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', background: 'var(--color-bg)' }}>
-
-      {/* Panneau gauche */}
       {/* Panneau gauche — décoratif */}
       <div className="hidden lg:flex" style={{
         width: '45%',
