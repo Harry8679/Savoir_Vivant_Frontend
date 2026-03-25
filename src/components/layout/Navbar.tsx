@@ -53,14 +53,14 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6">
           {[['Catalogue', '/catalogue'], ['Connexion', '/login']].map(([label, href]) => (
             <Link key={label} to={href}
-              style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', transition: 'color 0.2s', textDecoration: 'none' }}
+              style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--color-text-muted)', transition: 'color 0.2s', textDecoration: 'none' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
               onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
               {label}
             </Link>
           ))}
           <a href="#offres"
-            style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', transition: 'color 0.2s', textDecoration: 'none' }}
+            style={{ fontSize: '0.875rem', fontWeight: 800, color: 'var(--color-text-muted)', transition: 'color 0.2s', textDecoration: 'none' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
             Offres
