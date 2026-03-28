@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { authService } from '@services/auth.service'
 import { useAuthStore } from '@store/authStore'
 import { LoginPayload, RegisterPayload } from '@/types/auth.types'
-// import { RegisterPayload, LoginPayload } from '@types/auth.types'
 
 export const useAuth = () => {
   const navigate      = useNavigate()
