@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Logo from '@components/ui/Logo'
-// import { useThemeStore } from '@store/themeStore'
 
 export default function LoginPage() {
   // const { theme } = useThemeStore()
