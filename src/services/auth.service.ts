@@ -1,4 +1,4 @@
-import { RegisterPayload } from '@/types/auth.types'
+import { AuthResponse, RegisterPayload } from '@/types/auth.types'
 import api from './api'
 // import { AuthResponse, LoginPayload, RegisterPayload, ApiResponse } from '@types/auth.types'
 
