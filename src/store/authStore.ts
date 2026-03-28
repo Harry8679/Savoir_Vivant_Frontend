@@ -1,7 +1,6 @@
 import { User } from '@/types/auth.types'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-// import { User } from '@appTypes/auth.types'
 
 interface AuthStore {
   user:            User | null
