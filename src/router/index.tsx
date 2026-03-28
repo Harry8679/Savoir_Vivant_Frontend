@@ -30,7 +30,6 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '/login',               element: <LoginPage /> },
   { path: '/connexion',           element: <LoginPage /> },
   { path: '/register',            element: <RegisterPage /> },
   { path: '/inscription',         element: <RegisterPage /> },
