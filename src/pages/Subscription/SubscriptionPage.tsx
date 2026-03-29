@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import DashboardLayout from '@components/layout/DashboardLayout'
 import { useAuthStore } from '@store/authStore'
 
 const plans = [
@@ -7,8 +8,10 @@ const plans = [
     label: 'Mensuel',
     price: '9€',
     period: '/ mois',
-    desc: 'Accès complet, sans engagement.',
+    annual: '108€/an',
+    desc: 'Flexibilité totale, sans engagement.',
     features: ['Tous les livres disponibles', 'Web + application mobile', 'Nouveaux livres inclus', 'Annulation à tout moment'],
+    color: 'var(--color-primary)',
     highlight: false,
   },
   {
@@ -16,96 +19,111 @@ const plans = [
     label: 'Annuel',
     price: '79€',
     period: '/ an',
-    promo: 'Économisez 29€',
-    desc: 'La meilleure offre pour apprendre toute l\'année.',
+    promo: '-27%',
+    desc: 'La meilleure valeur pour apprendre toute l\'année.',
     features: ['Tous les livres disponibles', 'Web + application mobile', 'Nouveaux livres inclus', '2 mois offerts vs mensuel'],
+    color: '#f59e0b',
     highlight: true,
   },
+]
+
+const features = [
+  { icon: '📚', label: 'Bibliothèque complète', desc: 'Accès illimité à tous les livres publiés' },
+  { icon: '📱', label: 'Multi-plateforme', desc: 'Web, iOS et Android inclus' },
+  { icon: '🔄', label: 'Mises à jour gratuites', desc: 'Les nouvelles éditions sont incluses' },
+  { icon: '🚀', label: 'Nouveaux livres', desc: 'Chaque mois, de nouveaux contenus' },
 ]
 
 export default function SubscriptionPage() {
   const { user } = useAuthStore()
   const isActive = user?.subscriptionStatus === 'active'
+  const [selected, setSelected] = useState<'monthly' | 'yearly'>('yearly')
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '6rem', paddingBottom: '4rem' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 3rem' }}>
-
-        <div style={{ marginBottom: '2.5rem' }}>
-          <Link to="/profile" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontWeight: 600, marginBottom: '1.5rem', transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            Mon profil
-          </Link>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
-            Mon abonnement
-          </h1>
-          <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-            {isActive ? 'Votre abonnement est actif.' : 'Choisissez la formule qui vous convient.'}
-          </p>
-        </div>
-
-        {/* Statut actif */}
-        {isActive && (
-          <div style={{ padding: '1.25rem 1.5rem', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '14px', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>✓</div>
-              <div>
-                <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text)' }}>Abonnement actif</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Accès illimité à toute la bibliothèque</div>
-              </div>
+    <DashboardLayout
+      title="Mon abonnement"
+      subtitle={isActive ? 'Votre abonnement est actif · Accès illimité à toute la bibliothèque' : 'Débloquez toute la bibliothèque SavoirVivant'}
+    >
+      {/* Statut actif */}
+      {isActive && (
+        <div style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.03))', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '16px', marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>✓</div>
+            <div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '2px' }}>Abonnement actif</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Prochain renouvellement : 1er mai 2025</div>
             </div>
-            <button style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.06)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-              Annuler l'abonnement
-            </button>
           </div>
-        )}
-
-        {/* Plans */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem' }}>
-          {plans.map(plan => (
-            <div key={plan.id} style={{ background: plan.highlight ? 'rgba(245,158,11,0.04)' : 'var(--color-surface)', border: plan.highlight ? '1px solid rgba(245,158,11,0.3)' : '1px solid var(--color-border)', borderRadius: '14px', padding: '1.75rem', position: 'relative' }}>
-              {plan.highlight && (
-                <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: '#f59e0b', color: '#000', fontSize: '0.65rem', fontWeight: 700, padding: '3px 12px', borderRadius: '100px', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                  Meilleure offre
-                </div>
-              )}
-              {plan.promo && (
-                <div style={{ display: 'inline-block', fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(16,185,129,0.1)', color: '#10b981', borderRadius: '100px', fontWeight: 600, marginBottom: '0.75rem' }}>
-                  {plan.promo}
-                </div>
-              )}
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.5rem' }}>{plan.label}</h3>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '0.5rem' }}>
-                <span style={{ fontSize: '2rem', fontWeight: 800, color: plan.highlight ? '#f59e0b' : 'var(--color-primary)', fontFamily: 'var(--font-display)' }}>{plan.price}</span>
-                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>{plan.period}</span>
-              </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500, marginBottom: '1.25rem', lineHeight: 1.5 }}>{plan.desc}</p>
-              <ul style={{ listStyle: 'none', padding: 0, marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {plan.features.map(f => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
-                      <circle cx="7" cy="7" r="6" stroke={plan.highlight ? '#f59e0b' : 'var(--color-primary)'} strokeWidth="1" opacity="0.4" />
-                      <path d="M4.5 7l2 2 3-3" stroke={plan.highlight ? '#f59e0b' : 'var(--color-primary)'} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                disabled={isActive}
-                style={{ width: '100%', padding: '0.75rem', background: isActive ? 'var(--color-surface-2)' : plan.highlight ? '#f59e0b' : 'transparent', color: isActive ? 'var(--color-text-dim)' : plan.highlight ? '#000' : 'var(--color-primary)', border: `1px solid ${isActive ? 'var(--color-border)' : plan.highlight ? '#f59e0b' : 'var(--color-primary)'}`, borderRadius: '8px', fontSize: '0.875rem', fontWeight: 700, cursor: isActive ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}
-                onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = plan.highlight ? '#d97706' : 'var(--color-primary)'; e.currentTarget.style.color = '#fff' } }}
-                onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = plan.highlight ? '#f59e0b' : 'transparent'; e.currentTarget.style.color = plan.highlight ? '#000' : 'var(--color-primary)' } }}>
-                {isActive ? 'Déjà abonné' : `Choisir ${plan.label.toLowerCase()}`}
-              </button>
-            </div>
-          ))}
+          <button style={{ padding: '0.6rem 1.25rem', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', color: '#ef4444', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+            Annuler l'abonnement
+          </button>
         </div>
+      )}
+
+      {/* Features incluses */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '2.5rem' }}>
+        {features.map(f => (
+          <div key={f.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem 1.25rem', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px' }}>
+            <span style={{ fontSize: '1.25rem', flexShrink: 0 }}>{f.icon}</span>
+            <div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '2px' }}>{f.label}</div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>{f.desc}</div>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
+
+      {/* Plans */}
+      {!isActive && (
+        <>
+          <div style={{ marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Choisir une formule
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem', marginBottom: '1.5rem' }}>
+            {plans.map(plan => (
+              <div key={plan.id}
+                onClick={() => setSelected(plan.id as 'monthly' | 'yearly')}
+                style={{
+                  background: selected === plan.id ? (plan.highlight ? 'rgba(245,158,11,0.06)' : 'rgba(99,102,241,0.06)') : 'var(--color-surface)',
+                  border: selected === plan.id ? `2px solid ${plan.color}` : '1px solid var(--color-border)',
+                  borderRadius: '16px', padding: '1.75rem', cursor: 'pointer',
+                  transition: 'all 0.2s', position: 'relative',
+                }}>
+                {plan.promo && (
+                  <div style={{ position: 'absolute', top: '-11px', left: '1.5rem', background: '#f59e0b', color: '#000', fontSize: '0.65rem', fontWeight: 800, padding: '3px 10px', borderRadius: '100px', letterSpacing: '0.06em' }}>
+                    {plan.promo} · Meilleure offre
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--color-text)' }}>{plan.label}</h3>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selected === plan.id ? plan.color : 'var(--color-border)'}`, background: selected === plan.id ? plan.color : 'transparent', transition: 'all 0.2s', flexShrink: 0 }} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '0.5rem' }}>
+                  <span style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 900, color: plan.color }}>{plan.price}</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>{plan.period}</span>
+                </div>
+                {'annual' in plan && <div style={{ fontSize: '0.75rem', color: 'var(--color-text-dim)', marginBottom: '0.75rem' }}>équivalent à {plan.annual}</div>}
+                <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500, marginBottom: '1.25rem', lineHeight: 1.5 }}>{plan.desc}</p>
+                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {plan.features.map(f => (
+                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
+                      <span style={{ color: plan.color, fontWeight: 700, fontSize: '0.9rem' }}>✓</span> {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <button style={{ width: '100%', padding: '1rem', background: selected === 'yearly' ? '#f59e0b' : 'var(--color-primary)', color: selected === 'yearly' ? '#000' : '#fff', border: 'none', borderRadius: '12px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+            Commencer l'abonnement {selected === 'yearly' ? 'annuel · 79€' : 'mensuel · 9€/mois'}
+          </button>
+        </>
+      )}
+    </DashboardLayout>
   )
 }
