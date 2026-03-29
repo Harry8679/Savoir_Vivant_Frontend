@@ -17,7 +17,6 @@ export default function Navbar() {
   const { isAuthenticated, user } = useAuthStore()
   const { logout }              = useAuth()
 
-  // Ferme le menu user si on clique ailleurs
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
@@ -38,6 +37,13 @@ export default function Navbar() {
     fontSize: '0.875rem', fontWeight: 600,
     color: 'var(--color-text-muted)',
     transition: 'color 0.2s', textDecoration: 'none',
+  }
+
+  const dropdownLink = {
+    display: 'flex', alignItems: 'center', gap: '10px',
+    padding: '8px 12px', borderRadius: '8px',
+    textDecoration: 'none', color: 'var(--color-text-muted)',
+    fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.15s',
   }
 
   return (
@@ -69,21 +75,19 @@ export default function Navbar() {
           <ThemeToggle />
 
           {isAuthenticated && user ? (
-            /* ── Menu utilisateur ── */
             <div ref={userMenuRef} style={{ position: 'relative' }}>
+              {/* Bouton avatar */}
               <button
                 onClick={() => setUserMenu(!userMenu)}
                 style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: '1px solid var(--color-border)', borderRadius: '100px', padding: '6px 12px 6px 6px', cursor: 'pointer', transition: 'all 0.2s' }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--color-primary)')}
                 onMouseLeave={e => { if (!userMenu) e.currentTarget.style.borderColor = 'var(--color-border)' }}>
-                {/* Avatar initiales */}
-                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: user.role === 'admin' ? '#f59e0b' : 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: user.role === 'admin' ? '#000' : '#fff', flexShrink: 0 }}>
                   {user.name?.slice(0, 2).toUpperCase() ?? 'SV'}
                 </div>
                 <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--color-text)', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {user.name?.split(' ')[0]}
                 </span>
-                {/* Chevron */}
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ color: 'var(--color-text-muted)', transition: 'transform 0.2s', transform: userMenu ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
                   <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -91,30 +95,52 @@ export default function Navbar() {
 
               {/* Dropdown */}
               {userMenu && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, minWidth: '200px', background: isDark ? 'rgba(15,22,35,0.98)' : 'rgba(255,255,255,0.98)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '8px', backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', zIndex: 100 }}>
+                <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, minWidth: '220px', background: isDark ? 'rgba(15,22,35,0.98)' : 'rgba(255,255,255,0.98)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '8px', backdropFilter: 'blur(12px)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', zIndex: 100 }}>
 
                   {/* Infos user */}
                   <div style={{ padding: '8px 12px 12px', borderBottom: '1px solid var(--color-border)', marginBottom: '4px' }}>
                     <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '2px' }}>{user.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{user.email}</div>
-                    {user.subscriptionStatus === 'active' && (
-                      <div style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(16,185,129,0.1)', color: '#10b981', borderRadius: '100px', fontWeight: 600 }}>
-                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-                        Abonné
-                      </div>
-                    )}
+                    <div style={{ marginTop: '6px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                      {user.role === 'admin' && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(245,158,11,0.1)', color: '#f59e0b', borderRadius: '100px', fontWeight: 700 }}>
+                          👑 Admin
+                        </div>
+                      )}
+                      {user.subscriptionStatus === 'active' && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', padding: '2px 8px', background: 'rgba(16,185,129,0.1)', color: '#10b981', borderRadius: '100px', fontWeight: 600 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                          Abonné
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Liens */}
+                  {/* Lien Admin — visible seulement pour les admins */}
+                  {user.role === 'admin' && (
+                    <>
+                      <Link to="/admin"
+                        onClick={() => setUserMenu(false)}
+                        style={{ ...dropdownLink, background: 'rgba(245,158,11,0.06)', color: '#f59e0b', fontWeight: 700, marginBottom: '4px' }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.12)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.06)')}>
+                        <span style={{ fontSize: '14px' }}>👑</span>
+                        Espace Admin
+                      </Link>
+                      <div style={{ height: '1px', background: 'var(--color-border)', margin: '4px 0' }} />
+                    </>
+                  )}
+
+                  {/* Liens utilisateur */}
                   {[
-                    { label: 'Mon profil',       href: '/profile',  icon: '👤' },
-                    { label: 'Ma bibliothèque',  href: '/library',  icon: '📚' },
-                    { label: 'Mes commandes',    href: '/orders',   icon: '📦' },
-                    { label: 'Mon abonnement',   href: '/subscription', icon: '♾️' },
+                    { label: 'Mon profil',      href: '/profile',      icon: '👤' },
+                    { label: 'Ma bibliothèque', href: '/library',      icon: '📚' },
+                    { label: 'Mes commandes',   href: '/orders',       icon: '📦' },
+                    { label: 'Mon abonnement',  href: '/subscription', icon: '♾️' },
                   ].map(item => (
                     <Link key={item.href} to={item.href}
                       onClick={() => setUserMenu(false)}
-                      style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '8px', textDecoration: 'none', color: 'var(--color-text-muted)', fontSize: '0.875rem', fontWeight: 500, transition: 'all 0.15s' }}
+                      style={dropdownLink}
                       onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-surface-2)'; e.currentTarget.style.color = 'var(--color-text)' }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
                       <span style={{ fontSize: '14px' }}>{item.icon}</span>
@@ -138,7 +164,7 @@ export default function Navbar() {
               )}
             </div>
           ) : (
-            /* ── Non connecté ── */
+            /* Non connecté */
             <>
               <Link to="/connexion" style={linkStyle}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
@@ -155,7 +181,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile */}
+        {/* Mobile burger */}
         <div className="md:hidden flex items-center gap-3">
           <ThemeToggle />
           <button style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', display: 'flex', flexDirection: 'column', gap: '5px' }} onClick={() => setOpen(!open)}>
@@ -171,17 +197,26 @@ export default function Navbar() {
         <div style={{ background: isDark ? 'rgba(8,12,20,0.98)' : 'rgba(248,246,241,0.98)', borderTop: '1px solid var(--color-border)', padding: '1.5rem 3rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <Link to="/catalogue" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Catalogue</Link>
           <a href="#offres" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600 }}>Offres</a>
-          {isAuthenticated ? (
+
+          {isAuthenticated && user ? (
             <>
-              <Link to="/profile" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mon profil</Link>
-              <Link to="/library" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Ma bibliothèque</Link>
+              {user.role === 'admin' && (
+                <Link to="/admin" onClick={() => setOpen(false)}
+                  style={{ color: '#f59e0b', fontSize: '0.9rem', fontWeight: 700, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  👑 Espace Admin
+                </Link>
+              )}
+              <Link to="/profile"      onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mon profil</Link>
+              <Link to="/library"      onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Ma bibliothèque</Link>
+              <Link to="/orders"       onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mes commandes</Link>
+              <Link to="/subscription" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mon abonnement</Link>
               <button onClick={() => { setOpen(false); logout() }} style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', padding: 0 }}>
                 Se déconnecter
               </button>
             </>
           ) : (
             <>
-              <Link to="/connexion" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Connexion</Link>
+              <Link to="/connexion"  onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Connexion</Link>
               <Link to="/inscription" onClick={() => setOpen(false)} style={{ padding: '0.6rem 1rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '6px', textAlign: 'center', fontSize: '0.9rem', textDecoration: 'none', fontWeight: 700 }}>Commencer</Link>
             </>
           )}
