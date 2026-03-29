@@ -15,6 +15,14 @@ import CguPage             from '@pages/Legal/CguPage'
 import ConfidentialitePage from '@pages/Legal/ConfidentialitePage'
 import RootLayout          from '@components/layout/RootLayout'
 import PrivateRoute        from './PrivateRoute'
+import AdminLayout        from '@pages/Admin/AdminLayout'
+import AdminDashboard     from '@pages/Admin/AdminDashboard'
+import AdminBooks         from '@pages/Admin/AdminBooks'
+import AdminBookForm      from '@pages/Admin/AdminBookForm'
+import AdminCollections   from '@pages/Admin/AdminCollections'
+import AdminCarriers      from '@pages/Admin/AdminCarriers'
+import AdminOrders        from '@pages/Admin/AdminOrders'
+import AdminRoute         from './AdminRoute'
 
 export const router = createBrowserRouter([
   {
@@ -44,5 +52,23 @@ export const router = createBrowserRouter([
   { path: '/register',            element: <RegisterPage /> },
   { path: '/forgot-password',     element: <ForgotPasswordPage /> },
   { path: '/mot-de-passe-oublie', element: <ForgotPasswordPage /> },
+  {
+    path: '/admin',
+    element: <AdminRoute />,
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true,              element: <AdminDashboard /> },
+          { path: 'books',            element: <AdminBooks /> },
+          { path: 'books/new',        element: <AdminBookForm /> },
+          { path: 'books/:id/edit',   element: <AdminBookForm /> },
+          { path: 'collections',      element: <AdminCollections /> },
+          { path: 'carriers',         element: <AdminCarriers /> },
+          { path: 'orders',           element: <AdminOrders /> },
+        ],
+      },
+    ],
+  },
   { path: '*',                    element: <NotFoundPage /> },
 ])
