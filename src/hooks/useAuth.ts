@@ -49,7 +49,7 @@ export const useAuth = () => {
       // Ignore les erreurs de logout
     } finally {
       storeLogout()
-      navigate('/login')
+      navigate('/connexion')
     }
   }
 
