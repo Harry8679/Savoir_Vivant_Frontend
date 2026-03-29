@@ -69,7 +69,8 @@ export default function AdminBooks() {
                   </td>
                   <td style={{ padding: '12px 16px' }}>
                     <span style={{ fontSize: '0.78rem', padding: '3px 8px', borderRadius: '6px', background: 'rgba(99,102,241,0.08)', color: 'var(--color-primary)', fontWeight: 600 }}>
-                      {(book.collectionId as any)?.name ?? '—'}
+                      {/* {(book.collectionId as any)?.name ?? '—'} */}
+                      {(book.collectionId as { name?: string })?.name ?? '—'}
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
