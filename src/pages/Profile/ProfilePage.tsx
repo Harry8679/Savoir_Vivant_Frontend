@@ -1,5 +1,13 @@
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '@store/authStore'
 import { useAuth } from '@hooks/useAuth'
+
+const quickLinks = [
+  { icon: '📚', label: 'Ma bibliothèque', desc: 'Vos livres numériques achetés', href: '/library', color: '#6366f1' },
+  { icon: '📦', label: 'Mes commandes', desc: 'Historique de vos achats', href: '/orders', color: '#0d9488' },
+  { icon: '♾️', label: 'Mon abonnement', desc: 'Gérer votre abonnement', href: '/subscription', color: '#f59e0b' },
+  { icon: '⚙️', label: 'Paramètres', desc: 'Modifier vos informations', href: '/settings', color: '#db2777' },
+]
 
 export default function ProfilePage() {
   const { user } = useAuthStore()
@@ -35,24 +43,40 @@ export default function ProfilePage() {
 
         {/* Liens rapides */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
-          {[
-            { icon: '📚', label: 'Ma bibliothèque', desc: 'Vos livres numériques achetés', href: '/library' },
-            { icon: '📦', label: 'Mes commandes', desc: 'Historique de vos achats', href: '/orders' },
-            { icon: '♾️', label: 'Mon abonnement', desc: 'Gérer votre abonnement', href: '/subscription' },
-            { icon: '⚙️', label: 'Paramètres', desc: 'Modifier vos informations', href: '/settings' },
-          ].map(card => (
-            <a key={card.href} href={card.href}
-              style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1.25rem 1.5rem', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '12px', textDecoration: 'none', transition: 'all 0.2s', cursor: 'pointer' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)' }}>
-              <span style={{ fontSize: '1.5rem' }}>{card.icon}</span>
-              <div>
+          {quickLinks.map(card => (
+            <Link
+              key={card.href}
+              to={card.href}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '1rem',
+                padding: '1.25rem 1.5rem', background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)', borderRadius: '12px',
+                textDecoration: 'none', transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = card.color
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = `0 8px 20px rgba(0,0,0,0.15)`
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = 'var(--color-border)'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = 'none'
+              }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: `${card.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
+                {card.icon}
+              </div>
+              <div style={{ flex: 1 }}>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '2px' }}>{card.label}</div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>{card.desc}</div>
               </div>
-            </a>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ color: 'var(--color-text-dim)', flexShrink: 0 }}>
+                <path d="M5 3l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
           ))}
         </div>
+
       </div>
     </div>
   )
