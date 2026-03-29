@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { bookService } from '@services/book.service'
-import { Book, Collection, BookFilters } from '@appTypes/book.types'
+import { Book, BookFilters, Collection } from '@/types/book.types'
+// import { Book, Collection, BookFilters } from '@appTypes/book.types'
 
 export const useCatalogue = () => {
   const [books, setBooks]           = useState<Book[]>([])
