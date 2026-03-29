@@ -140,7 +140,7 @@ export default function Navbar() {
           ) : (
             /* ── Non connecté ── */
             <>
-              <Link to="/connexiion" style={linkStyle}
+              <Link to="/connexion" style={linkStyle}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
                 onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
                 Connexion
