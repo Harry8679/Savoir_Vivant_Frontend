@@ -140,12 +140,12 @@ export default function Navbar() {
           ) : (
             /* ── Non connecté ── */
             <>
-              <Link to="/login" style={linkStyle}
+              <Link to="/connexiion" style={linkStyle}
                 onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
                 onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
                 Connexion
               </Link>
-              <Link to="/register"
+              <Link to="/inscription"
                 style={{ fontSize: '0.875rem', fontWeight: 700, padding: '0.5rem 1.25rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '6px', transition: 'background 0.2s', textDecoration: 'none' }}
                 onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-hover)')}
                 onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}>
