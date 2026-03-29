@@ -181,8 +181,8 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Connexion</Link>
-              <Link to="/register" onClick={() => setOpen(false)} style={{ padding: '0.6rem 1rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '6px', textAlign: 'center', fontSize: '0.9rem', textDecoration: 'none', fontWeight: 700 }}>Commencer</Link>
+              <Link to="/connexion" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Connexion</Link>
+              <Link to="/inscription" onClick={() => setOpen(false)} style={{ padding: '0.6rem 1rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '6px', textAlign: 'center', fontSize: '0.9rem', textDecoration: 'none', fontWeight: 700 }}>Commencer</Link>
             </>
           )}
         </div>
