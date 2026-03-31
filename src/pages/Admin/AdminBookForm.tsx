@@ -82,7 +82,7 @@ export default function AdminBookForm() {
       if (coverFile) fd.append('cover', coverFile)
 
       if (isEdit) {
-        await api.patch(`/admin/books/${id}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await api.patch(`/admin/books/${id}`, fd)
       } else {
         await api.post('/admin/books', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       }
