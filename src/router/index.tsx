@@ -23,6 +23,8 @@ import AdminCollections   from '@pages/Admin/AdminCollections'
 import AdminCarriers      from '@pages/Admin/AdminCarriers'
 import AdminOrders        from '@pages/Admin/AdminOrders'
 import AdminRoute         from './AdminRoute'
+import AddressesPage from '@/pages/Settings/AddressesPage'
+import CheckoutPage from '@/pages/Checkout/CheckoutPage'
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +36,8 @@ export const router = createBrowserRouter([
       { path: 'catalogue/:slug',    element: <BookDetailPage /> },
       { path: 'cgu',                element: <CguPage /> },
       { path: 'confidentialite',    element: <ConfidentialitePage /> },
+      { path: 'settings/addresses', element: <AddressesPage /> },
+      { path: 'checkout',           element: <CheckoutPage /> },
       {
         element: <PrivateRoute />,
         children: [
