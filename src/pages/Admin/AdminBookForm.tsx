@@ -157,7 +157,7 @@ export default function AdminBookForm() {
                   { value: 'prepa',     label: 'Prépa (MPSI/PCSI/MP...)' },
                   { value: 'superieur', label: 'Supérieur / Université' },
                 ].map(level => {
-                  const checked = form.levels.includes(level.value)
+                  const checked = form.level.includes(level.value)
                   return (
                     <label key={level.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', border: `1px solid ${checked ? 'var(--color-primary)' : 'var(--color-border)'}`, borderRadius: '8px', cursor: 'pointer', background: checked ? 'rgba(99,102,241,0.06)' : 'transparent', transition: 'all 0.15s' }}>
                       <input
@@ -167,8 +167,8 @@ export default function AdminBookForm() {
                           setForm(prev => ({
                             ...prev,
                             levels: checked
-                              ? prev.levels.filter(l => l !== level.value)
-                              : [...prev.levels, level.value],
+                              ? prev.level.filter(l => l !== level.value)
+                              : [...prev.level, level.value],
                           }))
                         }}
                         style={{ width: '15px', height: '15px', accentColor: 'var(--color-primary)', flexShrink: 0 }}
@@ -180,7 +180,7 @@ export default function AdminBookForm() {
                   )
                 })}
               </div>
-              {form.levels.length === 0 && (
+              {form.level.length === 0 && (
                 <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '6px', fontWeight: 500 }}>
                   Sélectionne au moins un niveau
                 </p>
