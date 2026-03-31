@@ -14,7 +14,7 @@ export interface Book {
   description: string
   coverUrl: string
   collectionId: Collection
-  level: 'college' | 'lycee' | 'prepa' | 'superieur'
+  levels: 'college' | 'lycee' | 'prepa' | 'superieur'
   tags: string[]
   digitalPrice: number
   paperPrice: number
@@ -35,7 +35,7 @@ export interface BooksResponse {
 
 export interface BookFilters {
   collectionId?: string
-  level?: string
+  levels?: string
   search?: string
   page?: number
   limit?: number

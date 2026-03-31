@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalogue } from '@hooks/useCatalogue'
 import { useAuthStore } from '@store/authStore'
-import { Book, LEVEL_LABELS } from '@/types/book.types'
+// import { Book, LEVEL_LABELS } from '@/types/book.types'
+import { Book, LEVEL_LABELS } from '@appTypes/book.types'
 
 const LEVELS = ['college', 'lycee', 'prepa', 'superieur']
 
@@ -186,7 +187,8 @@ function BookCard({ book }: { book: Book; isAuthenticated: boolean }) {
         {/* Top badges */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
           <span style={{ fontSize: '0.6rem', padding: '2px 8px', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', borderRadius: '100px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            {book.levels?.map(l => LEVEL_LABELS[l]).join(' · ')}
+            {/* {book.levels?.map(l => LEVEL_LABELS[l]).join(' · ')} */}
+            {book.level?.map(l => LEVEL_LABELS[l]).join(' · ')}
           </span>
           {book.isAvailableInSubscription && (
             <span style={{ fontSize: '0.6rem', padding: '2px 8px', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', borderRadius: '100px', fontWeight: 600 }}>
