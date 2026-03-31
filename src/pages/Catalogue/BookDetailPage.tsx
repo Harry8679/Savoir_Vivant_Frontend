@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { bookService } from '@services/book.service'
-// import { Book, LEVEL_LABELS } from '@appTypes/book.types'
 import { useAuthStore } from '@store/authStore'
 import { Book, LEVEL_LABELS } from '@/types/book.types'
 

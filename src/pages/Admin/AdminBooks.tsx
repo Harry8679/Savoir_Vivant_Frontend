@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '@services/api'
 import { Book, LEVEL_LABELS } from '@/types/book.types'
-// import { Book, LEVEL_LABELS } from '@appTypes/book.types'
 
 export default function AdminBooks() {
   const [books, setBooks]   = useState<Book[]>([])
