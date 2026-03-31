@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalogue } from '@hooks/useCatalogue'
 import { useAuthStore } from '@store/authStore'
-// import { Book, LEVEL_LABELS } from '@/types/book.types'
-import { Book, LEVEL_LABELS } from '@appTypes/book.types'
+import { Book, LEVEL_LABELS } from '@/types/book.types'
+// import { Book, LEVEL_LABELS } from '@appTypes/book.types'
 
 const LEVELS = ['college', 'lycee', 'prepa', 'superieur']
 
@@ -26,10 +26,10 @@ export default function CataloguePage() {
 
   const handleClearFilters = () => {
     setSearchInput('')
-    updateFilters({ search: '', collectionId: '', level: '' })
+    updateFilters({ search: '', collectionId: '', levels: '' })
   }
 
-  const hasFilters = !!(filters.search || filters.collectionId || filters.level)
+  const hasFilters = !!(filters.search || filters.collectionId || filters.levels)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '72px' }}>
