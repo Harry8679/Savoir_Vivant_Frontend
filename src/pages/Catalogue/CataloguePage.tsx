@@ -26,10 +26,10 @@ export default function CataloguePage() {
 
   const handleClearFilters = () => {
     setSearchInput('')
-    updateFilters({ search: '', collectionId: '', levels: '' })
+    updateFilters({ search: '', collectionId: '', level: '' })
   }
 
-  const hasFilters = !!(filters.search || filters.collectionId || filters.levels)
+  const hasFilters = !!(filters.search || filters.collectionId || filters.level)
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '72px' }}>
@@ -94,13 +94,13 @@ export default function CataloguePage() {
           {/* Niveaux */}
           <FilterSection title="Niveau">
             <button
-              onClick={() => updateFilters({ levels: '' })}
+              onClick={() => updateFilters({ level: '' })}
               style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: !filters.level ? 'rgba(99,102,241,0.1)' : 'transparent', color: !filters.level ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: !filters.level ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
               Tous les niveaux
             </button>
             {LEVELS.map(level => (
               <button key={level}
-                onClick={() => updateFilters({ levels })}
+                onClick={() => updateFilters({ level })}
                 style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: filters.level === level ? 'rgba(99,102,241,0.1)' : 'transparent', color: filters.level === level ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: filters.level === level ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
                 {LEVEL_LABELS[level]}
               </button>
