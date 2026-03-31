@@ -84,9 +84,11 @@ export default function BookDetailPage() {
         {/* Infos + achat */}
         <div>
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-            <span style={{ fontSize: '0.75rem', padding: '4px 12px', background: 'rgba(99,102,241,0.1)', color: 'var(--color-primary)', borderRadius: '100px', fontWeight: 700 }}>
-              {LEVEL_LABELS[book.level]}
-            </span>
+            {book.levels?.map(l => (
+              <span key={l} style={{ fontSize: '0.75rem', padding: '4px 12px', background: 'rgba(99,102,241,0.1)', color: 'var(--color-primary)', borderRadius: '100px', fontWeight: 700 }}>
+                {LEVEL_LABELS[l]}
+              </span>
+            ))}
             {book.isAvailableInSubscription && (
               <span style={{ fontSize: '0.75rem', padding: '4px 12px', background: 'rgba(16,185,129,0.1)', color: '#10b981', borderRadius: '100px', fontWeight: 700 }}>
                 ♾️ Inclus dans l'abonnement
