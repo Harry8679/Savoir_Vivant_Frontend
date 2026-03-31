@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { useCatalogue } from '@hooks/useCatalogue'
 import { useAuthStore } from '@store/authStore'
 import { Book, LEVEL_LABELS } from '@/types/book.types'
-// import { Book, LEVEL_LABELS } from '@appTypes/book.types'
 
 const LEVELS = ['college', 'lycee', 'prepa', 'superieur']
 
