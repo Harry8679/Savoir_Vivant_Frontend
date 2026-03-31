@@ -84,7 +84,7 @@ export default function AdminBookForm() {
       if (isEdit) {
         await api.patch(`/admin/books/${id}`, fd)
       } else {
-        await api.post('/admin/books', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await api.post('/admin/books', fd)
       }
       navigate('/admin/books')
     } catch (err: unknown) {
