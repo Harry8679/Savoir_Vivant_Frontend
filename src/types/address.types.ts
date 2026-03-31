@@ -20,6 +20,7 @@ export interface Carrier {
 
 export const COUNTRIES: { code: string; label: string }[] = [
   { code: 'FR', label: 'France' },
+  { code: 'GA', label: 'Gabon' },
   { code: 'BE', label: 'Belgique' },
   { code: 'CH', label: 'Suisse' },
   { code: 'DE', label: 'Allemagne' },
