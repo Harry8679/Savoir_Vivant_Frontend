@@ -148,10 +148,43 @@ export default function AdminBookForm() {
                 {collections.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
               </select>
             </Field>
-            <Field label="Niveau *">
-              <select value={form.level} onChange={e => setForm({ ...form, level: e.target.value })} style={inputStyle}>
-                {LEVELS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
-              </select>
+            // ✅ Après — cases à cocher multiples
+            <Field label="Niveaux * (choix multiples)">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+                {[
+                  { value: 'college',   label: 'Collège' },
+                  { value: 'lycee',     label: 'Lycée / Terminale' },
+                  { value: 'prepa',     label: 'Prépa (MPSI/PCSI/MP...)' },
+                  { value: 'superieur', label: 'Supérieur / Université' },
+                ].map(level => {
+                  const checked = form.levels.includes(level.value)
+                  return (
+                    <label key={level.value} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', border: `1px solid ${checked ? 'var(--color-primary)' : 'var(--color-border)'}`, borderRadius: '8px', cursor: 'pointer', background: checked ? 'rgba(99,102,241,0.06)' : 'transparent', transition: 'all 0.15s' }}>
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => {
+                          setForm(prev => ({
+                            ...prev,
+                            levels: checked
+                              ? prev.levels.filter(l => l !== level.value)
+                              : [...prev.levels, level.value],
+                          }))
+                        }}
+                        style={{ width: '15px', height: '15px', accentColor: 'var(--color-primary)', flexShrink: 0 }}
+                      />
+                      <span style={{ fontSize: '0.875rem', fontWeight: checked ? 700 : 500, color: checked ? 'var(--color-text)' : 'var(--color-text-muted)' }}>
+                        {level.label}
+                      </span>
+                    </label>
+                  )
+                })}
+              </div>
+              {form.levels.length === 0 && (
+                <p style={{ fontSize: '0.75rem', color: '#ef4444', marginTop: '6px', fontWeight: 500 }}>
+                  Sélectionne au moins un niveau
+                </p>
+              )}
             </Field>
             <Field label="Nombre de pages">
               <input type="number" value={form.pageCount} onChange={e => setForm({ ...form, pageCount: e.target.value })} style={inputStyle}
