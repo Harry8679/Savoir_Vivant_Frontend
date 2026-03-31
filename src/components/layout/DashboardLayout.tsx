@@ -8,6 +8,7 @@ const navItems = [
   { href: '/orders',       icon: '◷', label: 'Commandes' },
   { href: '/subscription', icon: '◈', label: 'Abonnement' },
   { href: '/settings',     icon: '◉', label: 'Paramètres' },
+  { href: '/settings/addresses', icon: '📍', label: 'Mes adresses' },
 ]
 
 export default function DashboardLayout({ children, title, subtitle }: {
