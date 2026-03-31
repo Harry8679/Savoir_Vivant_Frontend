@@ -5,19 +5,19 @@ import { useAuthStore } from '@store/authStore'
 import { Book, LEVEL_LABELS } from '@/types/book.types'
 
 const COLLECTION_COLORS: Record<string, string> = {
-  'mathematiques-vivantes': 'linear-gradient(135deg,#6366f1,#4338ca)',
+  'mathematiques-vivantes':  'linear-gradient(135deg,#6366f1,#4338ca)',
   'physique-chimie-vivants': 'linear-gradient(135deg,#0f766e,#0d9488)',
-  'informatique-vivante': 'linear-gradient(135deg,#b45309,#d97706)',
-  'langues-vivantes': 'linear-gradient(135deg,#9d174d,#db2777)',
+  'informatique-vivante':    'linear-gradient(135deg,#b45309,#d97706)',
+  'langues-vivantes':        'linear-gradient(135deg,#9d174d,#db2777)',
 }
 
 export default function BookDetailPage() {
-  const { slug } = useParams<{ slug: string }>()
-  const navigate = useNavigate()
+  const { slug }   = useParams<{ slug: string }>()
+  const navigate   = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
-  const [book, setBook] = useState<Book | null>(null)
+  const [book, setBook]   = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'digital' | 'paper'>('digital')
+  const [tab, setTab]     = useState<'digital' | 'paper'>('digital')
 
   useEffect(() => {
     if (!slug) return
@@ -35,8 +35,8 @@ export default function BookDetailPage() {
 
   if (!book) return null
 
-  const col = book.collectionId
-  const gradient = COLLECTION_COLORS[col?.slug] ?? `linear-gradient(135deg, ${col?.color ?? '#6366f1'}, #4338ca)`
+  const col          = book.collectionId
+  const gradient     = COLLECTION_COLORS[col?.slug] ?? `linear-gradient(135deg, ${col?.color ?? '#6366f1'}, #4338ca)`
   const isSubscribed = user?.subscriptionStatus === 'active'
 
   return (
@@ -45,10 +45,13 @@ export default function BookDetailPage() {
       {/* Back */}
       <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '1rem 3rem' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <Link to="/catalogue" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontWeight: 600, transition: 'color 0.2s' }}
+          <Link to="/catalogue"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontWeight: 600, transition: 'color 0.2s' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
             Retour au catalogue
           </Link>
         </div>
@@ -114,7 +117,7 @@ export default function BookDetailPage() {
           {/* Achat */}
           <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.75rem', marginBottom: '1.5rem' }}>
 
-            {/* Tabs digital/papier */}
+            {/* Tabs */}
             <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
               {(['digital', 'paper'] as const).map(t => (
                 <button key={t} onClick={() => setTab(t)}
@@ -145,15 +148,25 @@ export default function BookDetailPage() {
                   <button style={{ width: '100%', padding: '0.9rem', background: '#10b981', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                     Lire maintenant
                   </button>
-                ) : (
-                  <button style={{ width: '100%', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'background 0.2s' }}
+                ) : tab === 'digital' ? (
+                  <button
+                    style={{ width: '100%', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'background 0.2s' }}
                     onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-hover)')}
                     onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}>
-                    {tab === 'digital' ? `Acheter en numérique — ${book.digitalPrice.toFixed(2)}€` : `Commander en papier — ${book.paperPrice.toFixed(2)}€`}
+                    Acheter en numérique — {book.digitalPrice.toFixed(2)}€
                   </button>
+                ) : (
+                  <Link to={`/checkout?bookId=${book._id}`}
+                    style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700, transition: 'background 0.2s' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-hover)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}>
+                    Commander en papier — {book.paperPrice.toFixed(2)}€
+                  </Link>
                 )}
+
                 {tab === 'digital' && !isSubscribed && (
-                  <Link to="/subscription" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600, transition: 'all 0.2s' }}
+                  <Link to="/subscription"
+                    style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600, transition: 'all 0.2s' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = '#f59e0b'; e.currentTarget.style.color = '#f59e0b' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
                     ♾️ Ou s'abonner pour accéder à tous les livres — 9€/mois
@@ -162,10 +175,12 @@ export default function BookDetailPage() {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <Link to="/connexion" style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
+                <Link to="/connexion"
+                  style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
                   Se connecter pour acheter
                 </Link>
-                <Link to="/inscription" style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>
+                <Link to="/inscription"
+                  style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>
                   Créer un compte gratuit
                 </Link>
               </div>
