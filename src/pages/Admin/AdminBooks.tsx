@@ -74,7 +74,7 @@ export default function AdminBooks() {
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                    {LEVEL_LABELS[book.level]}
+                    {book.levels?.map(l => LEVEL_LABELS[l]).join(', ')}
                   </td>
                   <td style={{ padding: '12px 16px', fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)' }}>
                     {book.digitalPrice.toFixed(2)}€
