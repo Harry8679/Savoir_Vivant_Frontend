@@ -94,13 +94,13 @@ export default function CataloguePage() {
           {/* Niveaux */}
           <FilterSection title="Niveau">
             <button
-              onClick={() => updateFilters({ level: '' })}
+              onClick={() => updateFilters({ levels: '' })}
               style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: !filters.level ? 'rgba(99,102,241,0.1)' : 'transparent', color: !filters.level ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: !filters.level ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
               Tous les niveaux
             </button>
             {LEVELS.map(level => (
               <button key={level}
-                onClick={() => updateFilters({ level })}
+                onClick={() => updateFilters({ levels })}
                 style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: filters.level === level ? 'rgba(99,102,241,0.1)' : 'transparent', color: filters.level === level ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: filters.level === level ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
                 {LEVEL_LABELS[level]}
               </button>
@@ -188,7 +188,7 @@ function BookCard({ book }: { book: Book; isAuthenticated: boolean }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
           <span style={{ fontSize: '0.6rem', padding: '2px 8px', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', borderRadius: '100px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             {/* {book.levels?.map(l => LEVEL_LABELS[l]).join(' · ')} */}
-            {book.level?.map(l => LEVEL_LABELS[l]).join(' · ')}
+            {book.levels?.map(l => LEVEL_LABELS[l]).join(' · ')}
           </span>
           {book.isAvailableInSubscription && (
             <span style={{ fontSize: '0.6rem', padding: '2px 8px', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', borderRadius: '100px', fontWeight: 600 }}>
