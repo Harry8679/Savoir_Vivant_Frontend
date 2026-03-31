@@ -1,6 +1,6 @@
-import { User } from '@/types/auth.types'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { User } from '@appTypes/auth.types'
 
 interface AuthStore {
   user:            User | null
@@ -39,7 +39,9 @@ export const useAuthStore = create<AuthStore>()(
       name: 'savoirvivant-auth',
       partialize: (state) => ({
         user:         state.user,
+        accessToken:  state.accessToken,
         refreshToken: state.refreshToken,
+        isAuthenticated: state.isAuthenticated,
       }),
     }
   )
