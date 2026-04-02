@@ -16,20 +16,10 @@ export default function BookDetailPage() {
   const { slug }   = useParams<{ slug: string }>()
   const navigate   = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
-  const [book, setBook]   = useState<Book | null>(null)
+  const [book, setBook]     = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab]     = useState<'digital' | 'paper'>('digital')
-
+  const [tab, setTab]       = useState<'digital' | 'paper'>('digital')
   const [paying, setPaying] = useState(false)
-
-  const handleBuyDigital = async () => {
-    try {
-      setPaying(true)
-      await paymentService.buyDigital(book._id)
-    } catch {
-      setPaying(false)
-    }
-  }
 
   useEffect(() => {
     if (!slug) return
@@ -38,6 +28,16 @@ export default function BookDetailPage() {
       .catch(() => navigate('/catalogue'))
       .finally(() => setLoading(false))
   }, [slug, navigate])
+
+  const handleBuyDigital = async () => {
+    if (!book) return
+    try {
+      setPaying(true)
+      await paymentService.buyDigital(book._id)
+    } catch {
+      setPaying(false)
+    }
+  }
 
   if (loading) return (
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -84,8 +84,6 @@ export default function BookDetailPage() {
               <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>par {book.author}</div>
             </div>
           </div>
-
-          {/* Tags */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {book.tags.map(tag => (
               <span key={tag} style={{ fontSize: '0.72rem', padding: '3px 10px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '100px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
@@ -121,7 +119,6 @@ export default function BookDetailPage() {
               {book.pageCount} pages
             </p>
           )}
-
           <p style={{ fontSize: '1rem', color: 'var(--color-text-muted)', lineHeight: 1.8, marginBottom: '2.5rem', fontWeight: 400 }}>
             {book.description}
           </p>
@@ -162,10 +159,10 @@ export default function BookDetailPage() {
                   </button>
                 ) : tab === 'digital' ? (
                   <button
-                    style={{ width: '100%', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'background 0.2s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-hover)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}>
-                    Acheter en numérique — {book.digitalPrice.toFixed(2)}€
+                    onClick={handleBuyDigital}
+                    disabled={paying}
+                    style={{ width: '100%', padding: '0.9rem', background: paying ? 'var(--color-surface-2)' : 'var(--color-primary)', color: paying ? 'var(--color-text-muted)' : '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)', transition: 'background 0.2s' }}>
+                    {paying ? 'Redirection...' : `Acheter en numérique — ${book.digitalPrice.toFixed(2)}€`}
                   </button>
                 ) : (
                   <Link to={`/checkout?bookId=${book._id}`}
