@@ -1,268 +1,325 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { useCatalogue } from '@hooks/useCatalogue'
-import { useAuthStore } from '@store/authStore'
-import { Book, LEVEL_LABELS } from '@/types/book.types'
-// import { Book, LEVEL_LABELS } from '@appTypes/book.types'
+import { useState, useEffect, useCallback } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { api } from "../hooks/useApi";
+import { useCartStore } from "../store";
+import type { Book, CollectionId, LevelId } from "../types";
 
-const LEVELS = ['college', 'lycee', 'prepa', 'superieur']
+// ─── Constantes ────────────────────────────────────────────────────────────────
 
-const COLLECTION_COLORS: Record<string, string> = {
-  'mathematiques-vivantes': 'linear-gradient(135deg,#6366f1,#4338ca)',
-  'physique-chimie-vivants': 'linear-gradient(135deg,#0f766e,#0d9488)',
-  'informatique-vivante': 'linear-gradient(135deg,#b45309,#d97706)',
-  'langues-vivantes': 'linear-gradient(135deg,#9d174d,#db2777)',
-}
+const COLLECTIONS = [
+  { id: "all" as const, label: "Toutes les collections" },
+  { id: "info" as CollectionId, label: "Informatique Vivante", color: "#6366f1" },
+  { id: "langues" as CollectionId, label: "Langues Vivantes", color: "#f59e0b" },
+  { id: "maths" as CollectionId, label: "Mathématiques Vivantes", color: "#3b82f6" },
+  { id: "phys" as CollectionId, label: "Physique & Chimie Vivants", color: "#10b981" },
+];
 
-export default function CataloguePage() {
-  const { books, collections, loading, error, total, totalPages, filters, updateFilters, setPage } = useCatalogue()
-  const { isAuthenticated } = useAuthStore()
-  const [searchInput, setSearchInput] = useState('')
+const LEVELS = [
+  { id: "all" as const, label: "Tous les niveaux" },
+  { id: "college" as LevelId, label: "Collège" },
+  { id: "lycee" as LevelId, label: "Lycée / Terminale" },
+  { id: "prepa" as LevelId, label: "Prépa (MPSI/MP)" },
+  { id: "sup" as LevelId, label: "Supérieur / Université" },
+];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    updateFilters({ search: searchInput })
-  }
+// ─── Composant BookCard ────────────────────────────────────────────────────────
 
-  const handleClearFilters = () => {
-    setSearchInput('')
-    updateFilters({ search: '', collectionId: '', level: '' })
-  }
+function BookCard({ book }: { book: Book }) {
+  const { addToCart, hasBook } = useCartStore();
+  const [addedFormat, setAddedFormat] = useState<"digital" | "paper" | null>(null);
+  const alreadyInCart = hasBook(book._id);
 
-  const hasFilters = !!(filters.search || filters.collectionId || filters.level)
+  const handleQuickAdd = (e: React.MouseEvent, format: "digital" | "paper") => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(book, format);
+    setAddedFormat(format);
+    setTimeout(() => setAddedFormat(null), 1500);
+  };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '72px' }}>
-
-      {/* Hero header */}
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '3rem', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <p style={{ fontSize: '0.75rem', color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 600, marginBottom: '0.5rem' }}>
-            Bibliothèque
+    <Link
+      to={`/catalogue/${book.slug}`}
+      className="group flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 hover:border-gray-200 hover:shadow-lg transition-all duration-200"
+    >
+      {/* Couverture */}
+      <div
+        className="w-24 min-w-24 h-32 rounded-xl flex flex-col justify-end p-2.5 shadow-md flex-shrink-0 overflow-hidden relative"
+        style={{ background: book.coverGradient }}
+      >
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="relative z-10">
+          <p className="text-[6px] font-bold uppercase tracking-wider text-white/60 mb-1 leading-tight">
+            {book.collectionLabel}
           </p>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.75rem, 4vw, 2.75rem)', fontWeight: 900, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: '0.5rem' }}>
-            Catalogue SavoirVivant
-          </h1>
-          <p style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-            {total} livre{total > 1 ? 's' : ''} disponible{total > 1 ? 's' : ''}
+          <p className="text-[10px] font-bold text-white leading-tight">
+            {book.title}
           </p>
         </div>
       </div>
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '2.5rem 3rem', display: 'grid', gridTemplateColumns: '240px 1fr', gap: '2.5rem', alignItems: 'start' }}>
-
-        {/* Sidebar filtres */}
-        <aside style={{ position: 'sticky', top: '100px' }}>
-          {/* Recherche */}
-          <form onSubmit={handleSearch} style={{ marginBottom: '1.5rem' }}>
-            <div style={{ position: 'relative' }}>
-              <input
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-                placeholder="Rechercher un livre..."
-                style={{ width: '100%', padding: '0.75rem 2.5rem 0.75rem 1rem', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '10px', color: 'var(--color-text)', fontSize: '0.875rem', fontFamily: 'var(--font-body)', outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box' }}
-                onFocus={e => (e.target.style.borderColor = 'var(--color-primary)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
-              />
-              <button type="submit" style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', padding: 0, display: 'flex' }}>
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" strokeWidth="1.4" />
-                  <path d="M10 10l3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-                </svg>
-              </button>
-            </div>
-          </form>
-
-          {/* Collections */}
-          <FilterSection title="Collections">
-            <button
-              onClick={() => updateFilters({ collectionId: '' })}
-              style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: !filters.collectionId ? 'rgba(99,102,241,0.1)' : 'transparent', color: !filters.collectionId ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: !filters.collectionId ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
-              Toutes les collections
-            </button>
-            {collections.map(col => (
-              <button key={col._id}
-                onClick={() => updateFilters({ collectionId: col._id })}
-                style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: filters.collectionId === col._id ? 'rgba(99,102,241,0.1)' : 'transparent', color: filters.collectionId === col._id ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: filters.collectionId === col._id ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: col.color, display: 'inline-block', flexShrink: 0 }} />
-                {col.name}
-              </button>
-            ))}
-          </FilterSection>
-
-          {/* Niveaux */}
-          <FilterSection title="Niveau">
-            <button
-              onClick={() => updateFilters({ level: '' })}
-              style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: !filters.level ? 'rgba(99,102,241,0.1)' : 'transparent', color: !filters.level ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: !filters.level ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
-              Tous les niveaux
-            </button>
-            {LEVELS.map(level => (
-              <button key={level}
-                onClick={() => updateFilters({ level })}
-                style={{ width: '100%', textAlign: 'left', padding: '7px 10px', borderRadius: '8px', background: filters.level === level ? 'rgba(99,102,241,0.1)' : 'transparent', color: filters.level === level ? 'var(--color-primary)' : 'var(--color-text-muted)', border: 'none', cursor: 'pointer', fontSize: '0.875rem', fontWeight: filters.level === level ? 700 : 500, fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
-                {LEVEL_LABELS[level]}
-              </button>
-            ))}
-          </FilterSection>
-
-          {/* Reset */}
-          {hasFilters && (
-            <button onClick={handleClearFilters}
-              style={{ width: '100%', padding: '0.6rem', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: '8px', color: 'var(--color-text-muted)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s', marginTop: '0.5rem' }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
-              Réinitialiser les filtres
-            </button>
-          )}
-        </aside>
-
-        {/* Grille livres */}
-        <div>
-          {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem' }}>
-              {Array.from({ length: 6 }).map((_, i) => (
-                <BookSkeleton key={i} />
-              ))}
-            </div>
-          ) : error ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: '#ef4444' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⚠️</div>
-              <p style={{ fontWeight: 600 }}>{error}</p>
-            </div>
-          ) : books.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '6rem 2rem', border: '2px dashed var(--color-border)', borderRadius: '16px' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '0.5rem' }}>Aucun livre trouvé</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                {hasFilters ? 'Essayez de modifier vos filtres.' : 'Aucun livre publié pour l\'instant.'}
-              </p>
-            </div>
-          ) : (
-            <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-                {books.map(book => (
-                  <BookCard key={book._id} book={book} isAuthenticated={isAuthenticated} />
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                    <button key={p} onClick={() => setPage(p)}
-                      style={{ width: '36px', height: '36px', borderRadius: '8px', border: `1px solid ${filters.page === p ? 'var(--color-primary)' : 'var(--color-border)'}`, background: filters.page === p ? 'var(--color-primary)' : 'transparent', color: filters.page === p ? '#fff' : 'var(--color-text-muted)', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.15s' }}>
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function BookCard({ book }: { book: Book; isAuthenticated: boolean }) {
-  const col = book.collectionId
-  const gradientKey = col?.slug ?? ''
-  const gradient = COLLECTION_COLORS[gradientKey] ?? `linear-gradient(135deg, ${col?.color ?? '#6366f1'}, #4338ca)`
-
-  return (
-    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', overflow: 'hidden', transition: 'all 0.25s', display: 'flex', flexDirection: 'column' }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.25)'; e.currentTarget.style.borderColor = col?.color ?? 'var(--color-primary)' }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)' }}>
-
-      {/* Cover */}
-      <div style={{ background: gradient, aspectRatio: '3/4', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1rem', position: 'relative', overflow: 'hidden' }}>
-        {/* Texture subtile */}
-        <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.06 }}>
-          <defs><pattern id={`dots-${book._id}`} x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="white" /></pattern></defs>
-          <rect width="100%" height="100%" fill={`url(#dots-${book._id})`} />
-        </svg>
-
-        {/* Top badges */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
-          <span style={{ fontSize: '0.6rem', padding: '2px 8px', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', borderRadius: '100px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            {/* {book.levels?.map(l => LEVEL_LABELS[l]).join(' · ')} */}
-            {book.levels?.map(l => LEVEL_LABELS[l]).join(' · ')}
+      {/* Infos */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        {/* Collection + abonnement */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span
+            className="text-[9px] font-black uppercase tracking-wider"
+            style={{ color: book.coverColor }}
+          >
+            {book.collectionLabel}
           </span>
-          {book.isAvailableInSubscription && (
-            <span style={{ fontSize: '0.6rem', padding: '2px 8px', background: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.9)', borderRadius: '100px', fontWeight: 600 }}>
-              ♾️ Abonnement
+          {book.includedInSubscription && (
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500 font-semibold border border-indigo-100">
+              ∞ Abonnement
+            </span>
+          )}
+          {alreadyInCart && (
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-50 text-green-600 font-semibold border border-green-100">
+              ✓ Dans le panier
             </span>
           )}
         </div>
 
         {/* Titre */}
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ fontSize: '0.55rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '5px' }}>
-            {col?.name}
-          </div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', color: '#fff', fontWeight: 800, lineHeight: 1.2 }}>
-            {book.title}
-          </div>
-        </div>
-      </div>
+        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">
+          {book.title}
+        </h3>
 
-      {/* Info */}
-      <div style={{ padding: '1rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 500, lineHeight: 1.5, flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        {/* Niveaux + pages */}
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] px-2 py-1 rounded-full bg-indigo-50 text-indigo-600 font-medium border border-indigo-100">
+            {book.levelsLabel}
+          </span>
+          <span className="text-[10px] text-gray-400">{book.pages} pages</span>
+        </div>
+
+        {/* Description */}
+        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
           {book.description}
         </p>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* Prix + CTA */}
+        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
           <div>
-            <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--color-text)', fontFamily: 'var(--font-display)' }}>
-              {book.digitalPrice.toFixed(2)}€
-            </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-              ou {book.paperPrice.toFixed(2)}€ papier
-            </div>
+            <span className="text-base font-extrabold text-gray-900">
+              {book.priceDigital.toFixed(2).replace(".", ",")}€
+            </span>
+            <span className="text-[10px] text-gray-400 ml-1.5">
+              ou {book.pricePaper.toFixed(2).replace(".", ",")}€ papier
+            </span>
           </div>
-          {book.pageCount && (
-            <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-              {book.pageCount}p
+          <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={(e) => handleQuickAdd(e, "digital")}
+              className="text-[10px] font-semibold px-2.5 py-1.5 rounded-lg bg-indigo-500 text-white hover:bg-indigo-600 transition-colors"
+            >
+              {addedFormat === "digital" ? "✓ Ajouté" : "+ Numérique"}
+            </button>
+            <button
+              onClick={(e) => handleQuickAdd(e, "paper")}
+              className="text-[10px] font-semibold px-2.5 py-1.5 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+            >
+              {addedFormat === "paper" ? "✓ Ajouté" : "+ Papier"}
+            </button>
+          </div>
+          <span className="text-xs font-semibold text-gray-600 group-hover:hidden">
+            Voir le livre →
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+// ─── Composant Skeleton ────────────────────────────────────────────────────────
+
+function BookCardSkeleton() {
+  return (
+    <div className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 animate-pulse">
+      <div className="w-24 min-w-24 h-32 rounded-xl bg-gray-200 flex-shrink-0" />
+      <div className="flex-1 space-y-3 pt-1">
+        <div className="h-2.5 bg-gray-200 rounded w-1/3" />
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-3 bg-gray-100 rounded w-1/4" />
+        <div className="space-y-1.5">
+          <div className="h-2.5 bg-gray-100 rounded" />
+          <div className="h-2.5 bg-gray-100 rounded w-5/6" />
+        </div>
+        <div className="flex justify-between pt-2">
+          <div className="h-4 bg-gray-200 rounded w-1/4" />
+          <div className="h-6 bg-gray-200 rounded w-1/4" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Page principale ───────────────────────────────────────────────────────────
+
+export default function CataloguePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [books, setBooks] = useState<Book[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const activeCol = searchParams.get("collection") ?? "all";
+  const activeLevel = searchParams.get("level") ?? "all";
+  const search = searchParams.get("q") ?? "";
+
+  const setParam = (key: string, value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (!value || value === "all") next.delete(key);
+    else next.set(key, value);
+    setSearchParams(next);
+  };
+
+  const fetchBooks = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params: Record<string, string> = {};
+      if (activeCol !== "all") params.collection = activeCol;
+      if (activeLevel !== "all") params.level = activeLevel;
+      if (search) params.q = search;
+
+      const data = await api.books.list(params);
+      setBooks(data.books);
+      setTotal(data.total);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeCol, activeLevel, search]);
+
+  useEffect(() => {
+    fetchBooks();
+  }, [fetchBooks]);
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex gap-8">
+      {/* ── Sidebar ────────────────────────────────────────────────────────── */}
+      <aside className="w-52 min-w-52 flex-shrink-0 hidden md:block">
+        {/* Search */}
+        <div className="relative mb-7">
+          <input
+            type="text"
+            defaultValue={search}
+            onKeyDown={(e) => {
+              if (e.key === "Enter")
+                setParam("q", (e.target as HTMLInputElement).value);
+            }}
+            onChange={(e) => !e.target.value && setParam("q", "")}
+            placeholder="Rechercher un livre..."
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 bg-white text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+            🔍
+          </span>
+        </div>
+
+        {/* Collections */}
+        <div className="mb-6">
+          <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
+            Collections
+          </p>
+          {COLLECTIONS.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setParam("collection", c.id)}
+              className={`flex items-center gap-2.5 w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium mb-0.5 transition-colors ${
+                activeCol === c.id
+                  ? "bg-indigo-50 text-indigo-600 font-semibold"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {c.color && (
+                <span
+                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  style={{ background: c.color }}
+                />
+              )}
+              {c.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Niveaux */}
+        <div>
+          <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
+            Niveau
+          </p>
+          {LEVELS.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setParam("level", l.id)}
+              className={`block w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium mb-0.5 transition-colors ${
+                activeLevel === l.id
+                  ? "bg-indigo-50 text-indigo-600 font-semibold"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+      </aside>
+
+      {/* ── Main ───────────────────────────────────────────────────────────── */}
+      <main className="flex-1 min-w-0">
+        {/* Header */}
+        <div className="flex items-baseline gap-3 mb-5">
+          <h1 className="text-xl font-extrabold text-gray-900">
+            {activeCol === "all"
+              ? "Tous les livres"
+              : COLLECTIONS.find((c) => c.id === activeCol)?.label}
+          </h1>
+          {!loading && (
+            <span className="text-sm text-gray-400">
+              {total} livre{total > 1 ? "s" : ""}
             </span>
           )}
         </div>
 
-        <Link to={`/catalogue/${book.slug}`}
-          style={{ display: 'block', textAlign: 'center', padding: '0.6rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontSize: '0.85rem', fontWeight: 700, transition: 'background 0.2s' }}
-          onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-hover)')}
-          onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}>
-          Voir le livre
-        </Link>
-      </div>
-    </div>
-  )
-}
+        {/* Banner abonnement */}
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-violet-50 border border-indigo-100 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-bold text-indigo-700">
+              ∞ Accès illimité à toute la bibliothèque
+            </p>
+            <p className="text-xs text-indigo-500 mt-0.5">
+              Tous les livres numériques inclus — 9€/mois ou 79€/an
+            </p>
+          </div>
+          <Link
+            to="/offres"
+            className="text-xs font-semibold bg-indigo-500 text-white px-4 py-2 rounded-xl hover:bg-indigo-600 transition-colors whitespace-nowrap flex-shrink-0"
+          >
+            S'abonner →
+          </Link>
+        </div>
 
-function BookSkeleton() {
-  return (
-    <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', overflow: 'hidden', animation: 'shimmer 1.5s ease-in-out infinite' }}>
-      <div style={{ aspectRatio: '3/4', background: 'var(--color-surface-2)' }} />
-      <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <div style={{ height: '12px', background: 'var(--color-surface-2)', borderRadius: '4px', width: '80%' }} />
-        <div style={{ height: '12px', background: 'var(--color-surface-2)', borderRadius: '4px', width: '60%' }} />
-        <div style={{ height: '32px', background: 'var(--color-surface-2)', borderRadius: '8px', marginTop: '8px' }} />
-      </div>
+        {/* Grille */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+          {loading
+            ? Array.from({ length: 6 }).map((_, i) => (
+                <BookCardSkeleton key={i} />
+              ))
+            : books.length === 0
+            ? (
+              <div className="col-span-2 text-center py-20">
+                <div className="text-4xl mb-3">📚</div>
+                <p className="text-gray-500">Aucun livre trouvé pour ces filtres.</p>
+                <button
+                  onClick={() => setSearchParams({})}
+                  className="mt-4 text-sm text-indigo-500 hover:underline"
+                >
+                  Réinitialiser les filtres
+                </button>
+              </div>
+            )
+            : books.map((book) => <BookCard key={book._id} book={book} />)}
+        </div>
+      </main>
     </div>
-  )
-}
-
-function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: '1.5rem' }}>
-      <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--color-text-dim)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem', padding: '0 10px' }}>
-        {title}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-        {children}
-      </div>
-    </div>
-  )
+  );
 }
