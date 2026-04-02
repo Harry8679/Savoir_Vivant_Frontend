@@ -1,271 +1,319 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { bookService } from '@services/book.service'
-import { useAuthStore } from '@store/authStore'
-import { Book, LEVEL_LABELS } from '@/types/book.types'
-import { paymentService } from '@services/payment.service'
-import { useCartStore } from '@store/cartStore'
-
-const COLLECTION_COLORS: Record<string, string> = {
-  'mathematiques-vivantes':  'linear-gradient(135deg,#6366f1,#4338ca)',
-  'physique-chimie-vivants': 'linear-gradient(135deg,#0f766e,#0d9488)',
-  'informatique-vivante':    'linear-gradient(135deg,#b45309,#d97706)',
-  'langues-vivantes':        'linear-gradient(135deg,#9d174d,#db2777)',
-}
+import type { Book } from '../../types/book.types'
+import { LEVEL_LABELS } from '../../types/book.types'
+import { bookService } from '../../services/book.service'
+import { useCartStore } from '../../store/cartStore'
+import { useAuthStore } from '../../store/authStore'
 
 export default function BookDetailPage() {
-  const { slug }   = useParams<{ slug: string }>()
-  const navigate   = useNavigate()
+  const { slug }    = useParams<{ slug: string }>()
+  const navigate    = useNavigate()
+  const { addToCart, openCart } = useCartStore()
   const { isAuthenticated, user } = useAuthStore()
-  const { addItem, removeItem, hasItem } = useCartStore()
+
   const [book, setBook]     = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab]       = useState<'digital' | 'paper'>('digital')
-  const [paying, setPaying] = useState(false)
+  const [format, setFormat]   = useState<'digital' | 'paper'>('digital')
+  const [added, setAdded]     = useState(false)
+
+  // Vérifie si l'user a accès (acheté ou abonné)
+  const hasAccess =
+    user?.purchasedBooks?.includes(book?._id ?? '') ||
+    (user?.subscription?.status === 'active' && book?.isAvailableInSubscription)
 
   useEffect(() => {
     if (!slug) return
-    bookService.getBySlug(slug)
+    setLoading(true)
+    bookService.getBook(slug)
       .then(setBook)
       .catch(() => navigate('/catalogue'))
       .finally(() => setLoading(false))
   }, [slug, navigate])
 
-  const handleBuyDigital = async () => {
+  const handleAddToCart = () => {
     if (!book) return
-    try {
-      setPaying(true)
-      await paymentService.buyDigital(book._id)
-    } catch {
-      setPaying(false)
-    }
+    addToCart(book, format)
+    setAdded(true)
+    openCart()
+    setTimeout(() => setAdded(false), 2000)
   }
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>Chargement...</div>
-    </div>
-  )
-
-  if (!book) return null
-
-  const col             = book.collectionId
-  const gradient        = COLLECTION_COLORS[col?.slug] ?? `linear-gradient(135deg, ${col?.color ?? '#6366f1'}, #4338ca)`
-  const isSubscribed    = user?.subscriptionStatus === 'active'
-  const inCartDigital   = hasItem(book._id, 'digital')
-  const inCartPaper     = hasItem(book._id, 'paper')
-
-  const handleAddToCart = (type: 'digital' | 'paper') => {
-    addItem({
-      bookId:       book._id,
-      title:        book.title,
-      author:       book.author,
-      coverUrl:     book.coverUrl,
-      slug:         book.slug,
-      type,
-      price:        type === 'digital' ? book.digitalPrice : book.paperPrice,
-      digitalPrice: book.digitalPrice,
-      paperPrice:   book.paperPrice,
-    })
+  const handleBuyNow = () => {
+    if (!book) return
+    addToCart(book, format)
+    navigate('/checkout')
   }
+
+  const price = format === 'digital' ? book?.digitalPrice : book?.paperPrice
+
+  if (loading) return <BookDetailSkeleton />
+  if (!book)   return null
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '72px' }}>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
-      {/* Back */}
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', padding: '1rem 3rem' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <Link to="/catalogue"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.875rem', color: 'var(--color-text-muted)', textDecoration: 'none', fontWeight: 600, transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 12L6 8l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Retour au catalogue
-          </Link>
-        </div>
-      </div>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm text-gray-400 mb-8">
+        <Link to="/catalogue" className="hover:text-gray-600 transition-colors">
+          ← Retour au catalogue
+        </Link>
+        <span>/</span>
+        <span className="text-gray-600 line-clamp-1">{book.title}</span>
+      </nav>
 
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '3rem', display: 'grid', gridTemplateColumns: '300px 1fr', gap: '4rem', alignItems: 'start' }}>
+      <div className="flex flex-col lg:flex-row gap-10">
 
-        {/* Cover */}
-        <div>
-          <div style={{ background: gradient, borderRadius: '20px', aspectRatio: '2/3', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '1.5rem', boxShadow: '0 24px 60px rgba(0,0,0,0.4)', position: 'relative', overflow: 'hidden', marginBottom: '1.5rem' }}>
-            <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.06 }}>
-              <defs><pattern id="cover-dots" x="0" y="0" width="16" height="16" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="white" /></pattern></defs>
-              <rect width="100%" height="100%" fill="url(#cover-dots)" />
-            </svg>
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>{col?.name}</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', color: '#fff', fontWeight: 900, lineHeight: 1.2, marginBottom: '8px' }}>{book.title}</div>
-              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>par {book.author}</div>
+        {/* ── Colonne gauche ─────────────────────────────────────────────── */}
+        <div className="flex flex-col items-center lg:items-start gap-5 lg:w-72 flex-shrink-0">
+
+          {/* Couverture */}
+          <div className="w-52 rounded-2xl shadow-2xl overflow-hidden">
+            {book.coverUrl ? (
+              <img
+                src={book.coverUrl}
+                alt={book.title}
+                className="w-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-full h-72 flex flex-col justify-end p-5"
+                style={{
+                  background: `${book.collectionId?.color ?? '#6366f1'}22`,
+                  borderLeft: `4px solid ${book.collectionId?.color ?? '#6366f1'}`,
+                }}
+              >
+                <p className="text-[8px] font-black uppercase tracking-widest text-gray-500 mb-1">
+                  {book.collectionId?.name}
+                </p>
+                <p className="text-lg font-extrabold text-gray-800 leading-tight">
+                  {book.title}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">par {book.author}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Tags */}
+          {book.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
+              {book.tags.map(tag => (
+                <span
+                  key={tag}
+                  className="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600
+                             border border-gray-200"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Niveaux couverts */}
+          <div className="w-full p-4 rounded-xl bg-gray-50 border border-gray-100">
+            <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+              Niveaux couverts
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {book.levels.map(lvl => (
+                <span
+                  key={lvl}
+                  className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600
+                             font-medium border border-indigo-100"
+                >
+                  {LEVEL_LABELS[lvl]}
+                </span>
+              ))}
             </div>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {book.tags.map(tag => (
-              <span key={tag} style={{ fontSize: '0.72rem', padding: '3px 10px', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '100px', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                {tag}
-              </span>
-            ))}
-          </div>
         </div>
 
-        {/* Infos + achat */}
-        <div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-            {book.levels?.map(l => (
-              <span key={l} style={{ fontSize: '0.75rem', padding: '4px 12px', background: 'rgba(99,102,241,0.1)', color: 'var(--color-primary)', borderRadius: '100px', fontWeight: 700 }}>
-                {LEVEL_LABELS[l]}
-              </span>
-            ))}
+        {/* ── Colonne droite ──────────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0">
+
+          {/* Badges */}
+          <div className="flex items-center gap-2 flex-wrap mb-4">
+            <span
+              className="text-xs px-3 py-1 rounded-full font-semibold text-white"
+              style={{ background: book.collectionId?.color ?? '#6366f1' }}
+            >
+              {book.collectionId?.name}
+            </span>
             {book.isAvailableInSubscription && (
-              <span style={{ fontSize: '0.75rem', padding: '4px 12px', background: 'rgba(16,185,129,0.1)', color: '#10b981', borderRadius: '100px', fontWeight: 700 }}>
-                ♾️ Inclus dans l'abonnement
+              <span className="text-xs px-3 py-1 rounded-full bg-indigo-100 text-indigo-700
+                               font-semibold border border-indigo-200">
+                ∞ Inclus dans l'abonnement
               </span>
             )}
           </div>
 
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: 900, color: 'var(--color-text)', letterSpacing: '-0.02em', marginBottom: '0.75rem', lineHeight: 1.1 }}>
+          {/* Titre */}
+          <h1 className="text-3xl font-extrabold text-gray-900 leading-tight mb-2">
             {book.title}
           </h1>
-          <p style={{ fontSize: '0.9rem', color: 'var(--color-text-muted)', fontWeight: 500, marginBottom: '0.5rem' }}>
-            par <strong style={{ color: 'var(--color-text)' }}>{book.author}</strong>
+          <p className="text-sm text-gray-500 mb-1">
+            par <span className="font-semibold text-gray-700">{book.author}</span>
           </p>
           {book.pageCount && (
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-dim)', fontWeight: 500, marginBottom: '2rem' }}>
-              {book.pageCount} pages
-            </p>
+            <p className="text-sm text-gray-400 mb-5">{book.pageCount} pages</p>
           )}
-          <p style={{ fontSize: '1rem', color: 'var(--color-text-muted)', lineHeight: 1.8, marginBottom: '2.5rem', fontWeight: 400 }}>
+
+          {/* Description */}
+          <p className="text-base text-gray-600 leading-relaxed mb-8">
             {book.description}
           </p>
 
-          {/* Achat */}
-          <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.75rem', marginBottom: '1.5rem' }}>
-
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '1.5rem' }}>
-              {(['digital', 'paper'] as const).map(t => (
-                <button key={t} onClick={() => setTab(t)}
-                  style={{ flex: 1, padding: '0.65rem', borderRadius: '8px', border: `1px solid ${tab === t ? 'var(--color-primary)' : 'var(--color-border)'}`, background: tab === t ? 'rgba(99,102,241,0.08)' : 'transparent', color: tab === t ? 'var(--color-primary)' : 'var(--color-text-muted)', fontSize: '0.875rem', fontWeight: tab === t ? 700 : 500, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
-                  {t === 'digital' ? '📱 Numérique' : '📦 Papier'}
-                </button>
-              ))}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '0.5rem' }}>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-text)' }}>
-                {tab === 'digital' ? `${book.digitalPrice.toFixed(2)}€` : `${book.paperPrice.toFixed(2)}€`}
-              </span>
-              <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
-                {tab === 'digital' ? '— accès illimité' : '— livraison incluse'}
-              </span>
-            </div>
-
-            {tab === 'digital' && isSubscribed && book.isAvailableInSubscription && (
-              <div style={{ padding: '8px 12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: '8px', fontSize: '0.8rem', color: '#10b981', fontWeight: 600, marginBottom: '1rem' }}>
-                ✓ Ce livre est inclus dans votre abonnement actif — accès gratuit !
+          {/* ── Accès déjà acquis ─────────────────────────────────────────── */}
+          {hasAccess ? (
+            <div className="p-6 rounded-2xl border border-green-200 bg-green-50">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-green-500 text-xl">✓</span>
+                <p className="text-base font-bold text-green-700">
+                  {user?.subscription?.status === 'active'
+                    ? 'Inclus dans votre abonnement'
+                    : 'Vous possédez ce livre'}
+                </p>
               </div>
-            )}
+              <button
+                onClick={() => navigate(`/reader/${book._id}`)}
+                className="w-full py-3.5 bg-green-500 text-white font-bold rounded-xl
+                           hover:bg-green-600 transition-colors text-sm"
+              >
+                📖 Lire maintenant
+              </button>
+            </div>
 
-            {isAuthenticated ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          ) : (
+            /* ── Bloc achat ─────────────────────────────────────────────── */
+            <div className="p-6 rounded-2xl border border-gray-200 bg-white shadow-sm space-y-5">
 
-                {/* Abonné + livre disponible → Lire */}
-                {tab === 'digital' && isSubscribed && book.isAvailableInSubscription ? (
-                  <button style={{ width: '100%', padding: '0.9rem', background: '#10b981', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-                    Lire maintenant
+              {/* Toggle Numérique / Papier */}
+              <div className="flex rounded-xl overflow-hidden border border-gray-200">
+                {(['digital', 'paper'] as const).map(f => (
+                  <button
+                    key={f}
+                    onClick={() => setFormat(f)}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm
+                                font-semibold transition-colors
+                                ${f !== 'digital' ? 'border-l border-gray-200' : ''}
+                                ${format === f
+                                  ? 'bg-indigo-500 text-white'
+                                  : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                  >
+                    {f === 'digital' ? '📱 Numérique' : '📦 Papier'}
                   </button>
-
-                ) : tab === 'digital' ? (
-                  /* ── Format numérique ── */
-                  <>
-                    {/* Ajouter / retirer du panier */}
-                    <button
-                      onClick={() => inCartDigital
-                        ? removeItem(book._id, 'digital')
-                        : handleAddToCart('digital')
-                      }
-                      style={{ width: '100%', padding: '0.9rem', background: inCartDigital ? 'rgba(99,102,241,0.1)' : 'var(--color-primary)', color: inCartDigital ? 'var(--color-primary)' : '#fff', border: inCartDigital ? '2px solid var(--color-primary)' : 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
-                      {inCartDigital ? '✓ Dans le panier' : `🛒 Ajouter au panier — ${book.digitalPrice.toFixed(2)}€`}
-                    </button>
-
-                    {/* Voir le panier si ajouté */}
-                    {inCartDigital && (
-                      <Link to="/cart"
-                        style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
-                        Voir le panier →
-                      </Link>
-                    )}
-
-                    {/* Acheter directement */}
-                    <button
-                      onClick={handleBuyDigital}
-                      disabled={paying}
-                      style={{ width: '100%', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 600, cursor: paying ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}
-                      onMouseEnter={e => { if (!paying) { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-primary)' } }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
-                      {paying ? 'Redirection...' : 'Acheter directement →'}
-                    </button>
-                  </>
-
-                ) : (
-                  /* ── Format papier ── */
-                  <>
-                    {/* Ajouter / retirer du panier */}
-                    <button
-                      onClick={() => inCartPaper
-                        ? removeItem(book._id, 'paper')
-                        : handleAddToCart('paper')
-                      }
-                      style={{ width: '100%', padding: '0.9rem', background: inCartPaper ? 'rgba(99,102,241,0.1)' : 'var(--color-primary)', color: inCartPaper ? 'var(--color-primary)' : '#fff', border: inCartPaper ? '2px solid var(--color-primary)' : 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
-                      {inCartPaper ? '✓ Dans le panier' : `🛒 Ajouter au panier — ${book.paperPrice.toFixed(2)}€`}
-                    </button>
-
-                    {/* Voir le panier si ajouté */}
-                    {inCartPaper && (
-                      <Link to="/cart"
-                        style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
-                        Voir le panier →
-                      </Link>
-                    )}
-
-                    {/* Commander directement */}
-                    <Link to={`/checkout?bookId=${book._id}`}
-                      style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.2s' }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-primary)' }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
-                      Commander directement →
-                    </Link>
-                  </>
-                )}
-
-                {/* Lien abonnement */}
-                {tab === 'digital' && !isSubscribed && (
-                  <Link to="/subscription"
-                    style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600, transition: 'all 0.2s' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = '#f59e0b'; e.currentTarget.style.color = '#f59e0b' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
-                    ♾️ Ou s'abonner pour accéder à tous les livres — 9€/mois
-                  </Link>
-                )}
+                ))}
               </div>
 
-            ) : (
-              /* ── Non connecté ── */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <Link to="/connexion"
-                  style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
-                  Se connecter pour acheter
-                </Link>
-                <Link to="/inscription"
-                  style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600 }}>
-                  Créer un compte gratuit
-                </Link>
+              {/* Prix */}
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-extrabold text-gray-900">
+                  {price?.toFixed(2).replace('.', ',')}€
+                </span>
+                <span className="text-sm text-gray-400">
+                  — {format === 'digital' ? 'accès illimité' : 'livraison en France'}
+                </span>
               </div>
-            )}
+
+              {/* Avantages */}
+              <ul className="space-y-1.5">
+                {(format === 'digital'
+                  ? ['Accès immédiat après paiement', 'Lecture sur tous vos appareils', 'Mises à jour gratuites']
+                  : ['Livre physique haute qualité', 'Livraison en 3 à 5 jours ouvrés', 'Retours sous 14 jours']
+                ).map(f => (
+                  <li key={f} className="flex items-center gap-2 text-xs text-gray-500">
+                    <span className="text-green-400">✓</span>{f}
+                  </li>
+                ))}
+              </ul>
+
+              {/* CTA Panier */}
+              {isAuthenticated ? (
+                <button
+                  onClick={handleAddToCart}
+                  className={`w-full py-3.5 font-bold rounded-xl text-sm transition-all ${
+                    added
+                      ? 'bg-green-500 text-white'
+                      : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                  }`}
+                >
+                  {added
+                    ? '✓ Ajouté au panier !'
+                    : `🛒 Ajouter au panier — ${price?.toFixed(2).replace('.', ',')}€`}
+                </button>
+              ) : (
+                <Link
+                  to="/connexion"
+                  className="block w-full py-3.5 bg-indigo-500 text-white font-bold
+                             rounded-xl text-sm text-center hover:bg-indigo-600 transition-colors"
+                >
+                  Connexion pour acheter
+                </Link>
+              )}
+
+              {/* Acheter directement */}
+              {isAuthenticated && (
+                <button
+                  onClick={handleBuyNow}
+                  className="w-full py-3 bg-white border border-gray-200 text-gray-700
+                             font-semibold rounded-xl text-sm hover:bg-gray-50 transition-colors"
+                >
+                  Acheter directement →
+                </button>
+              )}
+
+              {/* Abonnement */}
+              {book.isAvailableInSubscription && (
+                <button
+                  onClick={() => navigate('/abonnement')}
+                  className="w-full py-3 bg-white border border-indigo-100 text-indigo-600
+                             font-semibold rounded-xl text-sm hover:bg-indigo-50 transition-colors"
+                >
+                  ∞ Ou s'abonner pour accéder à tous les livres — 9€/mois
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Sécurité */}
+          <div className="flex items-center justify-center gap-6 mt-4 text-xs text-gray-400">
+            <span>🔒 Paiement sécurisé</span>
+            <span>💳 Stripe</span>
+            <span>↩ Remboursement 14j</span>
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Skeleton ──────────────────────────────────────────────────────────────────
+
+function BookDetailSkeleton() {
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-8 animate-pulse">
+      <div className="h-4 w-40 bg-gray-200 rounded mb-8" />
+      <div className="flex gap-10">
+        <div className="w-72 flex-shrink-0 space-y-4">
+          <div className="w-52 h-72 bg-gray-200 rounded-2xl" />
+          <div className="flex gap-2">
+            <div className="h-6 w-16 bg-gray-200 rounded-full" />
+            <div className="h-6 w-20 bg-gray-200 rounded-full" />
+          </div>
+        </div>
+        <div className="flex-1 space-y-4">
+          <div className="flex gap-2">
+            <div className="h-6 w-24 bg-gray-200 rounded-full" />
+            <div className="h-6 w-32 bg-gray-200 rounded-full" />
+          </div>
+          <div className="h-9 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-100 rounded w-1/4" />
+          <div className="space-y-2">
+            <div className="h-3 bg-gray-100 rounded" />
+            <div className="h-3 bg-gray-100 rounded w-5/6" />
+            <div className="h-3 bg-gray-100 rounded w-4/5" />
+          </div>
+          <div className="h-64 bg-gray-100 rounded-2xl mt-6" />
         </div>
       </div>
     </div>
