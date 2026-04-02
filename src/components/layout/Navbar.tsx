@@ -5,6 +5,7 @@ import ThemeToggle from '@components/ui/ThemeToggle'
 import { useThemeStore } from '@store/themeStore'
 import { useAuthStore } from '@store/authStore'
 import { useAuth } from '@hooks/useAuth'
+import { useCartStore } from '@/store/cartStore'
 
 export default function Navbar() {
   const [open, setOpen]         = useState(false)
@@ -16,6 +17,8 @@ export default function Navbar() {
   const isDark                  = theme === 'dark'
   const { isAuthenticated, user } = useAuthStore()
   const { logout }              = useAuth()
+
+  const cartCount = useCartStore(s => s.count())
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -71,6 +74,21 @@ export default function Navbar() {
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
             Offres
           </a>
+
+          <Link to="/cart" style={{ position: 'relative', display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'var(--color-text-muted)', transition: 'color 0.2s' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-text-muted)')}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+            {cartCount > 0 && (
+              <span style={{ position: 'absolute', top: '-8px', right: '-8px', width: '18px', height: '18px', borderRadius: '50%', background: 'var(--color-primary)', color: '#fff', fontSize: '0.65rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {cartCount}
+              </span>
+            )}
+          </Link>
 
           <ThemeToggle />
 
