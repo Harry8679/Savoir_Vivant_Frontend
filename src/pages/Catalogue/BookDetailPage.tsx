@@ -4,6 +4,7 @@ import { bookService } from '@services/book.service'
 import { useAuthStore } from '@store/authStore'
 import { Book, LEVEL_LABELS } from '@/types/book.types'
 import { paymentService } from '@services/payment.service'
+import { useCartStore } from '@store/cartStore'
 
 const COLLECTION_COLORS: Record<string, string> = {
   'mathematiques-vivantes':  'linear-gradient(135deg,#6366f1,#4338ca)',
@@ -16,6 +17,7 @@ export default function BookDetailPage() {
   const { slug }   = useParams<{ slug: string }>()
   const navigate   = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
+  const { addItem, removeItem, hasItem } = useCartStore()
   const [book, setBook]     = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab]       = useState<'digital' | 'paper'>('digital')
@@ -47,9 +49,25 @@ export default function BookDetailPage() {
 
   if (!book) return null
 
-  const col          = book.collectionId
-  const gradient     = COLLECTION_COLORS[col?.slug] ?? `linear-gradient(135deg, ${col?.color ?? '#6366f1'}, #4338ca)`
-  const isSubscribed = user?.subscriptionStatus === 'active'
+  const col             = book.collectionId
+  const gradient        = COLLECTION_COLORS[col?.slug] ?? `linear-gradient(135deg, ${col?.color ?? '#6366f1'}, #4338ca)`
+  const isSubscribed    = user?.subscriptionStatus === 'active'
+  const inCartDigital   = hasItem(book._id, 'digital')
+  const inCartPaper     = hasItem(book._id, 'paper')
+
+  const handleAddToCart = (type: 'digital' | 'paper') => {
+    addItem({
+      bookId:       book._id,
+      title:        book.title,
+      author:       book.author,
+      coverUrl:     book.coverUrl,
+      slug:         book.slug,
+      type,
+      price:        type === 'digital' ? book.digitalPrice : book.paperPrice,
+      digitalPrice: book.digitalPrice,
+      paperPrice:   book.paperPrice,
+    })
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--color-bg)', paddingTop: '72px' }}>
@@ -153,26 +171,77 @@ export default function BookDetailPage() {
 
             {isAuthenticated ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+                {/* Abonné + livre disponible → Lire */}
                 {tab === 'digital' && isSubscribed && book.isAvailableInSubscription ? (
                   <button style={{ width: '100%', padding: '0.9rem', background: '#10b981', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                     Lire maintenant
                   </button>
+
                 ) : tab === 'digital' ? (
-                  <button
-                    onClick={handleBuyDigital}
-                    disabled={paying}
-                    style={{ width: '100%', padding: '0.9rem', background: paying ? 'var(--color-surface-2)' : 'var(--color-primary)', color: paying ? 'var(--color-text-muted)' : '#fff', border: 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)', transition: 'background 0.2s' }}>
-                    {paying ? 'Redirection...' : `Acheter en numérique — ${book.digitalPrice.toFixed(2)}€`}
-                  </button>
+                  /* ── Format numérique ── */
+                  <>
+                    {/* Ajouter / retirer du panier */}
+                    <button
+                      onClick={() => inCartDigital
+                        ? removeItem(book._id, 'digital')
+                        : handleAddToCart('digital')
+                      }
+                      style={{ width: '100%', padding: '0.9rem', background: inCartDigital ? 'rgba(99,102,241,0.1)' : 'var(--color-primary)', color: inCartDigital ? 'var(--color-primary)' : '#fff', border: inCartDigital ? '2px solid var(--color-primary)' : 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
+                      {inCartDigital ? '✓ Dans le panier' : `🛒 Ajouter au panier — ${book.digitalPrice.toFixed(2)}€`}
+                    </button>
+
+                    {/* Voir le panier si ajouté */}
+                    {inCartDigital && (
+                      <Link to="/cart"
+                        style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
+                        Voir le panier →
+                      </Link>
+                    )}
+
+                    {/* Acheter directement */}
+                    <button
+                      onClick={handleBuyDigital}
+                      disabled={paying}
+                      style={{ width: '100%', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 600, cursor: paying ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}
+                      onMouseEnter={e => { if (!paying) { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-primary)' } }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
+                      {paying ? 'Redirection...' : 'Acheter directement →'}
+                    </button>
+                  </>
+
                 ) : (
-                  <Link to={`/checkout?bookId=${book._id}`}
-                    style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700, transition: 'background 0.2s' }}
-                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-primary-hover)')}
-                    onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-primary)')}>
-                    Commander en papier — {book.paperPrice.toFixed(2)}€
-                  </Link>
+                  /* ── Format papier ── */
+                  <>
+                    {/* Ajouter / retirer du panier */}
+                    <button
+                      onClick={() => inCartPaper
+                        ? removeItem(book._id, 'paper')
+                        : handleAddToCart('paper')
+                      }
+                      style={{ width: '100%', padding: '0.9rem', background: inCartPaper ? 'rgba(99,102,241,0.1)' : 'var(--color-primary)', color: inCartPaper ? 'var(--color-primary)' : '#fff', border: inCartPaper ? '2px solid var(--color-primary)' : 'none', borderRadius: '10px', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
+                      {inCartPaper ? '✓ Dans le panier' : `🛒 Ajouter au panier — ${book.paperPrice.toFixed(2)}€`}
+                    </button>
+
+                    {/* Voir le panier si ajouté */}
+                    {inCartPaper && (
+                      <Link to="/cart"
+                        style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
+                        Voir le panier →
+                      </Link>
+                    )}
+
+                    {/* Commander directement */}
+                    <Link to={`/checkout?bookId=${book._id}`}
+                      style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 600, transition: 'all 0.2s' }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-primary)' }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text-muted)' }}>
+                      Commander directement →
+                    </Link>
+                  </>
                 )}
 
+                {/* Lien abonnement */}
                 {tab === 'digital' && !isSubscribed && (
                   <Link to="/subscription"
                     style={{ display: 'block', textAlign: 'center', padding: '0.75rem', background: 'transparent', color: 'var(--color-text-muted)', border: '1px solid var(--color-border)', borderRadius: '10px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 600, transition: 'all 0.2s' }}
@@ -182,7 +251,9 @@ export default function BookDetailPage() {
                   </Link>
                 )}
               </div>
+
             ) : (
+              /* ── Non connecté ── */
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <Link to="/connexion"
                   style={{ display: 'block', textAlign: 'center', padding: '0.9rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '10px', textDecoration: 'none', fontSize: '1rem', fontWeight: 700 }}>
