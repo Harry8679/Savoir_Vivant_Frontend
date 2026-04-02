@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { addressService, carrierService } from '@services/address.service'
 import { bookService } from '@services/book.service'
+import { paymentService } from '@services/payment.service'
 import { Address, Carrier, COUNTRIES } from '@/types/address.types'
 import { Book } from '@/types/book.types'
 
@@ -10,14 +11,15 @@ export default function CheckoutPage() {
   const navigate        = useNavigate()
   const bookId          = searchParams.get('bookId') ?? ''
 
-  const [book, setBook]             = useState<Book | null>(null)
-  const [addresses, setAddresses]   = useState<Address[]>([])
-  const [carriers, setCarriers]     = useState<Carrier[]>([])
+  const [book, setBook]               = useState<Book | null>(null)
+  const [addresses, setAddresses]     = useState<Address[]>([])
+  const [carriers, setCarriers]       = useState<Carrier[]>([])
   const [selectedAddress, setSelectedAddress] = useState<string>('')
   const [selectedCarrier, setSelectedCarrier] = useState<string>('')
   const [selectedCountry, setSelectedCountry] = useState<string>('FR')
-  const [step, setStep]             = useState<'address' | 'carrier' | 'summary'>('address')
-  const [loading, setLoading]       = useState(true)
+  const [step, setStep]               = useState<'address' | 'carrier' | 'summary'>('address')
+  const [loading, setLoading]         = useState(true)
+  const [paying, setPaying]           = useState(false)
 
   useEffect(() => {
     if (!bookId) { navigate('/catalogue'); return }
@@ -37,6 +39,16 @@ export default function CheckoutPage() {
       carrierService.getByCountry(selectedCountry).then(setCarriers)
     }
   }, [selectedCountry])
+
+  const handlePay = async () => {
+    if (!selectedAddress || !selectedCarrier || !book) return
+    try {
+      setPaying(true)
+      await paymentService.buyPaper(book._id, selectedAddress, selectedCarrier)
+    } catch {
+      setPaying(false)
+    }
+  }
 
   const selectedCarrierObj = carriers.find(c => c._id === selectedCarrier)
   const selectedAddressObj = addresses.find(a => a._id === selectedAddress)
@@ -90,7 +102,7 @@ export default function CheckoutPage() {
 
       <div style={{ maxWidth: '900px', margin: '0 auto', padding: '2.5rem 3rem', display: 'grid', gridTemplateColumns: '1fr 340px', gap: '2rem', alignItems: 'start' }}>
 
-        {/* Panneau gauche — étapes */}
+        {/* Gauche — étapes */}
         <div>
 
           {/* ÉTAPE 1 — Adresse */}
@@ -103,9 +115,7 @@ export default function CheckoutPage() {
               {addresses.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '2rem', border: '2px dashed var(--color-border)', borderRadius: '12px' }}>
                   <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>📍</div>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', fontWeight: 500, marginBottom: '1rem' }}>
-                    Aucune adresse enregistrée
-                  </p>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', fontWeight: 500, marginBottom: '1rem' }}>Aucune adresse enregistrée</p>
                   <Link to="/settings/addresses"
                     style={{ padding: '0.6rem 1.25rem', background: 'var(--color-primary)', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 700 }}>
                     Ajouter une adresse
@@ -124,9 +134,7 @@ export default function CheckoutPage() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
                             <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--color-text)' }}>{addr.fullName}</span>
                             {addr.isDefault && (
-                              <span style={{ fontSize: '0.68rem', padding: '1px 7px', borderRadius: '100px', background: 'rgba(99,102,241,0.1)', color: 'var(--color-primary)', fontWeight: 700 }}>
-                                Par défaut
-                              </span>
+                              <span style={{ fontSize: '0.68rem', padding: '1px 7px', borderRadius: '100px', background: 'rgba(99,102,241,0.1)', color: 'var(--color-primary)', fontWeight: 700 }}>Par défaut</span>
                             )}
                           </div>
                           <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', fontWeight: 500, lineHeight: 1.6 }}>
@@ -137,12 +145,10 @@ export default function CheckoutPage() {
                       </label>
                     ))}
                   </div>
-
                   <Link to="/settings/addresses"
                     style={{ fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
                     + Ajouter une nouvelle adresse
                   </Link>
-
                   <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
                     <button onClick={() => setStep('carrier')} disabled={!selectedAddress}
                       style={{ padding: '0.75rem 2rem', background: selectedAddress ? 'var(--color-primary)' : 'var(--color-surface-2)', color: selectedAddress ? '#fff' : 'var(--color-text-muted)', border: 'none', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 700, cursor: selectedAddress ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
@@ -215,7 +221,6 @@ export default function CheckoutPage() {
                 Récapitulatif de la commande
               </h2>
 
-              {/* Adresse */}
               <div style={{ padding: '1rem', background: 'var(--color-surface-2)', borderRadius: '10px', marginBottom: '1rem' }}>
                 <div style={{ fontSize: '0.72rem', color: 'var(--color-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Livraison à</div>
                 <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '3px' }}>{selectedAddressObj?.fullName}</div>
@@ -225,7 +230,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* Transporteur */}
               <div style={{ padding: '1rem', background: 'var(--color-surface-2)', borderRadius: '10px', marginBottom: '1.5rem' }}>
                 <div style={{ fontSize: '0.72rem', color: 'var(--color-text-dim)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Transporteur</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -247,21 +251,21 @@ export default function CheckoutPage() {
                   ← Retour
                 </button>
                 <button
-                  style={{ padding: '0.75rem 2rem', background: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}
-                  onClick={() => alert('Stripe bientôt intégré !')}>
-                  Payer {total.toFixed(2)}€
+                  onClick={handlePay}
+                  disabled={paying}
+                  style={{ padding: '0.75rem 2rem', background: paying ? 'var(--color-surface-2)' : 'var(--color-primary)', color: paying ? 'var(--color-text-muted)' : '#fff', border: 'none', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)' }}>
+                  {paying ? 'Redirection vers Stripe...' : `Payer ${total.toFixed(2)}€`}
                 </button>
               </div>
             </div>
           )}
         </div>
 
-        {/* Panneau droit — résumé commande */}
+        {/* Droite — résumé commande */}
         <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '16px', padding: '1.5rem', position: 'sticky', top: '100px' }}>
           <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 800, color: 'var(--color-text)', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--color-border)' }}>
             Votre commande
           </h3>
-
           <div style={{ display: 'flex', gap: '12px', marginBottom: '1.25rem' }}>
             <div style={{ width: '60px', height: '80px', borderRadius: '8px', background: 'linear-gradient(135deg, var(--color-primary), #4338ca)', flexShrink: 0 }} />
             <div>
@@ -270,7 +274,6 @@ export default function CheckoutPage() {
               <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontWeight: 500, marginTop: '4px' }}>📦 Version papier</div>
             </div>
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem' }}>
               <span style={{ color: 'var(--color-text-muted)', fontWeight: 500 }}>Livre papier</span>
