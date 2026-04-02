@@ -348,7 +348,7 @@ function CollectionFilter({
           className={filterClass(activeCol === c._id)}
         >
           <span
-            className="w-2 h-2 rounded-full flex-shrink-0"
+            className="w-2 h-2 rounded-full shrink-0"
             style={{ background: c.color }}
           />
           {c.name}
