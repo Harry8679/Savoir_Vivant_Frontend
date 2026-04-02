@@ -65,7 +65,7 @@ export default function BookDetailPage() {
       <div className="flex flex-col lg:flex-row gap-10">
 
         {/* ── Colonne gauche ─────────────────────────────────────────────── */}
-        <div className="flex flex-col items-center lg:items-start gap-5 lg:w-72 flex-shrink-0">
+        <div className="flex flex-col items-center lg:items-start gap-5 lg:w-72 shrink-0">
 
           {/* Couverture */}
           <div className="w-52 rounded-2xl shadow-2xl overflow-hidden">
@@ -294,7 +294,7 @@ function BookDetailSkeleton() {
     <div className="max-w-6xl mx-auto px-6 py-8 animate-pulse">
       <div className="h-4 w-40 bg-gray-200 rounded mb-8" />
       <div className="flex gap-10">
-        <div className="w-72 flex-shrink-0 space-y-4">
+        <div className="w-72 shrink-0 space-y-4">
           <div className="w-52 h-72 bg-gray-200 rounded-2xl" />
           <div className="flex gap-2">
             <div className="h-6 w-16 bg-gray-200 rounded-full" />
