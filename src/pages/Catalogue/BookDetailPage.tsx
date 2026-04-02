@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { bookService } from '@services/book.service'
 import { useAuthStore } from '@store/authStore'
 import { Book, LEVEL_LABELS } from '@/types/book.types'
+import { paymentService } from '@services/payment.service'
 
 const COLLECTION_COLORS: Record<string, string> = {
   'mathematiques-vivantes':  'linear-gradient(135deg,#6366f1,#4338ca)',
@@ -18,6 +19,17 @@ export default function BookDetailPage() {
   const [book, setBook]   = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab]     = useState<'digital' | 'paper'>('digital')
+
+  const [paying, setPaying] = useState(false)
+
+  const handleBuyDigital = async () => {
+    try {
+      setPaying(true)
+      await paymentService.buyDigital(book._id)
+    } catch {
+      setPaying(false)
+    }
+  }
 
   useEffect(() => {
     if (!slug) return
