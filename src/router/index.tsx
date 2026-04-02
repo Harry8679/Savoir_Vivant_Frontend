@@ -25,6 +25,7 @@ import AdminOrders        from '@pages/Admin/AdminOrders'
 import AdminRoute         from './AdminRoute'
 import AddressesPage from '@/pages/Settings/AddressesPage'
 import CheckoutPage from '@/pages/Checkout/CheckoutPage'
+import CartPage from '@/pages/Cart/CartPage'
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
       { path: 'confidentialite',    element: <ConfidentialitePage /> },
       { path: 'settings/addresses', element: <AddressesPage /> },
       { path: 'checkout',           element: <CheckoutPage /> },
+      { path: 'cart', element: <CartPage /> },
       {
         element: <PrivateRoute />,
         children: [
