@@ -144,7 +144,7 @@ export default function ReaderPage() {
 
       {/* ── Barre du haut ──────────────────────────────────────────────── */}
       <header className="flex items-center justify-between px-4 h-12 bg-gray-800
-                         border-b border-gray-700 flex-shrink-0">
+                         border-b border-gray-700 shrink-0">
         {/* Gauche */}
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)}
@@ -216,7 +216,7 @@ export default function ReaderPage() {
 
         {/* Sidebar sommaire */}
         {isSidebarOpen && (
-          <aside className="w-56 flex-shrink-0 bg-gray-800 border-r border-gray-700 overflow-y-auto">
+          <aside className="w-56 shrink-0 bg-gray-800 border-r border-gray-700 overflow-y-auto">
             <div className="p-4">
               <p className="text-[9px] font-bold uppercase tracking-widest text-gray-500 mb-3">
                 Pages
@@ -284,7 +284,7 @@ export default function ReaderPage() {
       </div>
 
       {/* ── Barre de progression ───────────────────────────────────────── */}
-      <div className="h-1 bg-gray-700 flex-shrink-0">
+      <div className="h-1 bg-gray-700 shrink-0">
         <div
           className="h-full bg-indigo-500 transition-all duration-300"
           style={{ width: `${numPages ? (currentPage / numPages) * 100 : 0}%` }}
