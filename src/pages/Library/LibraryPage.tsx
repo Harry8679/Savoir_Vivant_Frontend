@@ -1,25 +1,46 @@
+// src/pages/Library/LibraryPage.tsx
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Book } from '../../types/book.types'
 import { bookService } from '../../services/book.service'
 import { useAuthStore } from '../../store/authStore'
+import { useCartStore } from '../../store/cartStore'
 
 export default function LibraryPage() {
-  const navigate            = useNavigate()
-  const { user }            = useAuthStore()
+  const navigate              = useNavigate()
+  const [searchParams]        = useSearchParams()
+  const { user }              = useAuthStore()
+  const { clearCart }         = useCartStore()
+
   const [books,   setBooks]   = useState<Book[]>([])
   const [loading, setLoading] = useState(true)
   const [search,  setSearch]  = useState('')
 
+  // Détecte le retour depuis Stripe (?payment=success)
+  const paymentSuccess = searchParams.get('payment') === 'success'
+
   useEffect(() => {
-    bookService.getBooks({}).then(({ books: all }) => {
-      const accessible = all.filter(b =>
-        user?.purchasedBooks?.includes(b._id) ||
-        (user?.subscription?.status === 'active' && b.isAvailableInSubscription)
-      )
+    if (paymentSuccess) {
+      clearCart()
+    }
+  }, [paymentSuccess, clearCart])
+
+  useEffect(() => {
+    // user.subscriptionStatus est le vrai champ (pas user.subscription.status)
+    const isSubscribed = user?.subscriptionStatus === 'active'
+
+    bookService.getAll({}).then(({ books: all }) => {
+      const accessible = isSubscribed
+        ? all.filter(b => b.isAvailableInSubscription)
+        : [] // sans abonnement : la liste vient des achats (voir note ci-dessous)
+
       setBooks(accessible)
     }).finally(() => setLoading(false))
   }, [user])
+
+  // ── Note : si tu as un service pour les livres achetés, remplace par :
+  // ownedBookService.getMyBooks().then(setBooks).finally(...)
+  // En attendant, la liste affiche les livres de l'abonnement actif.
 
   const filtered = books.filter(b =>
     !search ||
@@ -27,7 +48,7 @@ export default function LibraryPage() {
     b.collectionId?.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  // ─── Vide ────────────────────────────────────────────────────────────────
+  // ─── Bibliothèque vide ────────────────────────────────────────────────────
 
   if (!loading && books.length === 0) {
     return (
@@ -40,14 +61,18 @@ export default function LibraryPage() {
           Achetez des livres ou abonnez-vous pour accéder à toute la bibliothèque.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button onClick={() => navigate('/catalogue')}
+          <button
+            onClick={() => navigate('/catalogue')}
             className="px-6 py-2.5 bg-indigo-500 text-white font-semibold rounded-xl
-                       text-sm hover:bg-indigo-600 transition-colors">
+                       text-sm hover:bg-indigo-600 transition-colors"
+          >
             Parcourir le catalogue →
           </button>
-          <button onClick={() => navigate('/abonnement')}
+          <button
+            onClick={() => navigate('/subscription')}
             className="px-6 py-2.5 bg-white border border-indigo-200 text-indigo-600
-                       font-semibold rounded-xl text-sm hover:bg-indigo-50 transition-colors">
+                       font-semibold rounded-xl text-sm hover:bg-indigo-50 transition-colors"
+          >
             ∞ Voir les offres
           </button>
         </div>
@@ -58,20 +83,37 @@ export default function LibraryPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
+      {/* Banner paiement confirmé */}
+      {paymentSuccess && (
+        <div className="mb-6 p-4 rounded-2xl bg-green-50 border border-green-200
+                        flex items-center gap-3">
+          <span className="text-2xl">✅</span>
+          <div>
+            <p className="font-bold text-green-700">Paiement confirmé !</p>
+            <p className="text-sm text-green-600">
+              Votre livre est maintenant disponible dans votre bibliothèque.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* En-tête */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900">Ma bibliothèque</h1>
           {!loading && (
             <p className="text-sm text-gray-400 mt-0.5">
-              {books.length} livre{books.length > 1 ? 's' : ''} accessible{books.length > 1 ? 's' : ''}
+              {books.length} livre{books.length > 1 ? 's' : ''}{' '}
+              accessible{books.length > 1 ? 's' : ''}
             </p>
           )}
         </div>
 
         {/* Recherche */}
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
+            🔍
+          </span>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -83,7 +125,7 @@ export default function LibraryPage() {
       </div>
 
       {/* Banner abonnement actif */}
-      {user?.subscription?.status === 'active' && (
+      {user?.subscriptionStatus === 'active' && (
         <div className="mb-6 p-4 rounded-2xl bg-indigo-50 border border-indigo-100
                         flex items-center gap-3">
           <span className="text-2xl">∞</span>
@@ -92,8 +134,7 @@ export default function LibraryPage() {
               Abonnement actif — accès illimité
             </p>
             <p className="text-xs text-indigo-500">
-              Renouvellement le{' '}
-              {new Date(user.subscription.currentPeriodEnd).toLocaleDateString('fr-FR')}
+              Tous les livres numériques inclus dans votre abonnement sont accessibles.
             </p>
           </div>
         </div>
@@ -113,8 +154,10 @@ export default function LibraryPage() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-400">Aucun livre ne correspond à votre recherche.</p>
-          <button onClick={() => setSearch('')}
-            className="mt-2 text-sm text-indigo-500 hover:underline">
+          <button
+            onClick={() => setSearch('')}
+            className="mt-2 text-sm text-indigo-500 hover:underline"
+          >
             Effacer la recherche
           </button>
         </div>
@@ -143,8 +186,10 @@ export default function LibraryPage() {
                       borderLeft: `3px solid ${book.collectionId?.color ?? '#6366f1'}`,
                     }}
                   >
-                    <p className="text-[7px] font-bold uppercase tracking-wider mb-1"
-                       style={{ color: book.collectionId?.color }}>
+                    <p
+                      className="text-[7px] font-bold uppercase tracking-wider mb-1"
+                      style={{ color: book.collectionId?.color }}
+                    >
                       {book.collectionId?.name}
                     </p>
                     <p className="text-xs font-bold text-gray-800 leading-tight">
@@ -153,7 +198,7 @@ export default function LibraryPage() {
                   </div>
                 )}
 
-                {/* Overlay "Lire" au hover */}
+                {/* Overlay Lire */}
                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100
                                 transition-opacity flex items-center justify-center">
                   <span className="bg-white text-gray-900 text-xs font-bold
@@ -180,8 +225,10 @@ export default function LibraryPage() {
       {/* Lien catalogue */}
       {!loading && books.length > 0 && (
         <div className="mt-10 text-center">
-          <button onClick={() => navigate('/catalogue')}
-            className="text-sm text-indigo-500 hover:underline">
+          <button
+            onClick={() => navigate('/catalogue')}
+            className="text-sm text-indigo-500 hover:underline"
+          >
             Découvrir plus de livres →
           </button>
         </div>
