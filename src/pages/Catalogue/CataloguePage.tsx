@@ -140,7 +140,7 @@ function BookCard({ book }: { book: Book }) {
 function Skeleton() {
   return (
     <div className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 animate-pulse">
-      <div className="w-24 min-w-24 h-32 rounded-xl bg-gray-200 flex-shrink-0" />
+      <div className="w-24 min-w-24 h-32 rounded-xl bg-gray-200 shrink-0" />
       <div className="flex-1 space-y-3 pt-1">
         <div className="h-2.5 bg-gray-200 rounded w-1/3" />
         <div className="h-4 bg-gray-200 rounded w-3/4" />
