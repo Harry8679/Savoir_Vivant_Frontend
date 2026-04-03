@@ -9,18 +9,24 @@ import { useAuthStore } from '../../store/authStore'
 export default function BookDetailPage() {
   const { slug }    = useParams<{ slug: string }>()
   const navigate    = useNavigate()
-  const { addToCart, openCart } = useCartStore()
+
+  // ── Vrais noms de ton cartStore ────────────────────────────────────────────
+  const { addItem, hasItem } = useCartStore()
+
+  // ── Vrais champs de ton User (subscriptionStatus, pas subscription.status) ─
   const { isAuthenticated, user } = useAuthStore()
 
-  const [book, setBook]     = useState<Book | null>(null)
+  const [book,    setBook]    = useState<Book | null>(null)
   const [loading, setLoading] = useState(true)
-  const [format, setFormat]   = useState<'digital' | 'paper'>('digital')
-  const [added, setAdded]     = useState(false)
+  const [format,  setFormat]  = useState<'digital' | 'paper'>('digital')
+  const [added,   setAdded]   = useState(false)
 
-  // Vérifie si l'user a accès (acheté ou abonné)
+  // user.subscriptionStatus est un champ direct dans ton type User
+  // Il n'y a pas de user.purchasedBooks ni user.subscription dans ton User type
   const hasAccess =
-    user?.purchasedBooks?.includes(book?._id ?? '') ||
-    (user?.subscription?.status === 'active' && book?.isAvailableInSubscription)
+    user?.subscriptionStatus === 'active' && book?.isAvailableInSubscription
+
+  const alreadyInCart = book ? hasItem(book._id, format) : false
 
   useEffect(() => {
     if (!slug) return
@@ -33,15 +39,37 @@ export default function BookDetailPage() {
 
   const handleAddToCart = () => {
     if (!book) return
-    addToCart(book, format)
+    // addItem() est le vrai nom dans ton cartStore
+    addItem({
+      bookId:       book._id,
+      title:        book.title,
+      author:       book.author,
+      coverUrl:     book.coverUrl ?? '',
+      slug:         book.slug,
+      type:         format,
+      price:        format === 'digital' ? book.digitalPrice : book.paperPrice,
+      digitalPrice: book.digitalPrice,
+      paperPrice:   book.paperPrice,
+    })
     setAdded(true)
-    openCart()
     setTimeout(() => setAdded(false), 2000)
   }
 
   const handleBuyNow = () => {
     if (!book) return
-    addToCart(book, format)
+    if (!alreadyInCart) {
+      addItem({
+        bookId:       book._id,
+        title:        book.title,
+        author:       book.author,
+        coverUrl:     book.coverUrl ?? '',
+        slug:         book.slug,
+        type:         format,
+        price:        format === 'digital' ? book.digitalPrice : book.paperPrice,
+        digitalPrice: book.digitalPrice,
+        paperPrice:   book.paperPrice,
+      })
+    }
     navigate('/checkout')
   }
 
@@ -131,7 +159,7 @@ export default function BookDetailPage() {
         {/* ── Colonne droite ──────────────────────────────────────────────── */}
         <div className="flex-1 min-w-0">
 
-          {/* Badges */}
+          {/* Badges collection + abonnement */}
           <div className="flex items-center gap-2 flex-wrap mb-4">
             <span
               className="text-xs px-3 py-1 rounded-full font-semibold text-white"
@@ -163,15 +191,13 @@ export default function BookDetailPage() {
             {book.description}
           </p>
 
-          {/* ── Accès déjà acquis ─────────────────────────────────────────── */}
+          {/* ── Abonné actif : bouton Lire ────────────────────────────────── */}
           {hasAccess ? (
             <div className="p-6 rounded-2xl border border-green-200 bg-green-50">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-green-500 text-xl">✓</span>
                 <p className="text-base font-bold text-green-700">
-                  {user?.subscription?.status === 'active'
-                    ? 'Inclus dans votre abonnement'
-                    : 'Vous possédez ce livre'}
+                  Inclus dans votre abonnement actif
                 </p>
               </div>
               <button
@@ -195,7 +221,7 @@ export default function BookDetailPage() {
                     onClick={() => setFormat(f)}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm
                                 font-semibold transition-colors
-                                ${f !== 'digital' ? 'border-l border-gray-200' : ''}
+                                ${f === 'paper' ? 'border-l border-gray-200' : ''}
                                 ${format === f
                                   ? 'bg-indigo-500 text-white'
                                   : 'bg-white text-gray-600 hover:bg-gray-50'}`}
@@ -218,8 +244,16 @@ export default function BookDetailPage() {
               {/* Avantages */}
               <ul className="space-y-1.5">
                 {(format === 'digital'
-                  ? ['Accès immédiat après paiement', 'Lecture sur tous vos appareils', 'Mises à jour gratuites']
-                  : ['Livre physique haute qualité', 'Livraison en 3 à 5 jours ouvrés', 'Retours sous 14 jours']
+                  ? [
+                      'Accès immédiat après paiement',
+                      'Lecture sur tous vos appareils',
+                      'Mises à jour gratuites',
+                    ]
+                  : [
+                      'Livre physique haute qualité',
+                      'Livraison en 3 à 5 jours ouvrés',
+                      'Retours sous 14 jours',
+                    ]
                 ).map(f => (
                   <li key={f} className="flex items-center gap-2 text-xs text-gray-500">
                     <span className="text-green-400">✓</span>{f}
@@ -227,23 +261,28 @@ export default function BookDetailPage() {
                 ))}
               </ul>
 
-              {/* CTA Panier */}
+              {/* CTA Ajouter au panier */}
               {isAuthenticated ? (
                 <button
                   onClick={handleAddToCart}
+                  disabled={alreadyInCart}
                   className={`w-full py-3.5 font-bold rounded-xl text-sm transition-all ${
                     added
                       ? 'bg-green-500 text-white'
-                      : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                      : alreadyInCart
+                        ? 'bg-gray-100 text-gray-400 cursor-default'
+                        : 'bg-indigo-500 text-white hover:bg-indigo-600'
                   }`}
                 >
                   {added
                     ? '✓ Ajouté au panier !'
-                    : `🛒 Ajouter au panier — ${price?.toFixed(2).replace('.', ',')}€`}
+                    : alreadyInCart
+                      ? '✓ Déjà dans le panier'
+                      : `🛒 Ajouter au panier — ${price?.toFixed(2).replace('.', ',')}€`}
                 </button>
               ) : (
                 <Link
-                  to="/connexion"
+                  to={`/connexion?redirect=/catalogue/${book.slug}`}
                   className="block w-full py-3.5 bg-indigo-500 text-white font-bold
                              rounded-xl text-sm text-center hover:bg-indigo-600 transition-colors"
                 >
@@ -262,7 +301,7 @@ export default function BookDetailPage() {
                 </button>
               )}
 
-              {/* Abonnement */}
+              {/* Option abonnement */}
               {book.isAvailableInSubscription && (
                 <button
                   onClick={() => navigate('/abonnement')}
