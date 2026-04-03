@@ -31,7 +31,7 @@ export default function BookDetailPage() {
   useEffect(() => {
     if (!slug) return
     setLoading(true)
-    bookService.getBook(slug)
+    bookService.getBySlug(slug)
       .then(setBook)
       .catch(() => navigate('/catalogue'))
       .finally(() => setLoading(false))
