@@ -187,10 +187,10 @@ export default function OrdersPage() {
                       <img
                         src={item.coverUrl}
                         alt=""
-                        className="w-5 h-6 rounded object-cover flex-shrink-0"
+                        className="w-5 h-6 rounded object-cover shrink-0"
                       />
                     ) : (
-                      <div className="w-5 h-6 rounded bg-indigo-100 flex-shrink-0" />
+                      <div className="w-5 h-6 rounded bg-indigo-100 shrink-0" />
                     )}
                     <span className="font-medium line-clamp-1 max-w-32">{item.title}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
