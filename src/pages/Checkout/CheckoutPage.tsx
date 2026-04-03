@@ -1,3 +1,4 @@
+// src/pages/Checkout/CheckoutPage.tsx
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -18,8 +19,8 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!)
 // ─── Types locaux ─────────────────────────────────────────────────────────────
 
 interface Carrier {
-  _id: string
-  name: string
+  _id:   string
+  name:  string
   price: number
   delay: string
 }
@@ -27,9 +28,9 @@ interface Carrier {
 type Step = 'livraison' | 'paiement' | 'confirmation'
 
 const STEPS = [
-  { id: 'livraison' as Step, label: 'Livraison',     icon: '📦' },
-  { id: 'paiement'  as Step, label: 'Paiement',      icon: '💳' },
-  { id: 'confirmation' as Step, label: 'Confirmation', icon: '✅' },
+  { id: 'livraison'     as Step, label: 'Livraison',     icon: '📦' },
+  { id: 'paiement'      as Step, label: 'Paiement',      icon: '💳' },
+  { id: 'confirmation'  as Step, label: 'Confirmation',  icon: '✅' },
 ]
 
 // ─── Stepper ──────────────────────────────────────────────────────────────────
@@ -41,9 +42,9 @@ function Stepper({ current }: { current: Step }) {
       {STEPS.map((step, i) => (
         <div key={step.id} className="flex items-center">
           <div className="flex flex-col items-center">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base
-                            font-bold transition-all ${
-              i < idx  ? 'bg-green-500 text-white'
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center
+                            text-base font-bold transition-all ${
+              i < idx   ? 'bg-green-500 text-white'
             : i === idx ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-200'
             :             'bg-gray-100 text-gray-400'
             }`}>
@@ -67,40 +68,49 @@ function Stepper({ current }: { current: Step }) {
 }
 
 // ─── Récapitulatif commande ────────────────────────────────────────────────────
+// CartItem réel : { bookId, title, coverUrl, type, price, digitalPrice, paperPrice }
 
 function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
   const { items, total } = useCartStore()
-  const hasPhysical = items.some(i => i.format === 'paper')
+
+  // ton CartItem utilise "type" (pas "format")
+  const hasPhysical = items.some(i => i.type === 'paper')
   const grandTotal  = total() + (hasPhysical ? shippingCost : 0)
 
   return (
     <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 sticky top-24">
       <h3 className="font-bold text-gray-900 mb-4 text-sm">Récapitulatif</h3>
+
       <div className="space-y-3 mb-4">
         {items.map(item => (
-          <div key={`${item.book._id}-${item.format}`} className="flex items-center gap-3">
-            <div className="w-9 h-12 rounded-lg shrink-0 overflow-hidden">
-              {item.book.coverUrl ? (
-                <img src={item.book.coverUrl} alt="" className="w-full h-full object-cover" />
+          <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
+            {/* Couverture */}
+            <div className="w-9 h-12 rounded-lg flex-shrink-0 overflow-hidden">
+              {item.coverUrl ? (
+                <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-indigo-100" />
               )}
             </div>
+
+            {/* Infos */}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-gray-900 line-clamp-1">
-                {item.book.title}
+                {item.title}
               </p>
               <p className="text-[10px] text-gray-400">
-                {item.format === 'digital' ? 'Numérique' : 'Papier'} × {item.quantity}
+                {item.type === 'digital' ? 'Numérique' : 'Papier'}
               </p>
             </div>
-            <span className="text-xs font-bold text-gray-900">
-              {((item.format === 'digital' ? item.book.digitalPrice : item.book.paperPrice)
-                * item.quantity).toFixed(2).replace('.', ',')}€
+
+            {/* Prix */}
+            <span className="text-xs font-bold text-gray-900 flex-shrink-0">
+              {item.price.toFixed(2).replace('.', ',')}€
             </span>
           </div>
         ))}
       </div>
+
       <div className="border-t border-gray-200 pt-3 space-y-1.5">
         <div className="flex justify-between text-xs text-gray-500">
           <span>Sous-total</span>
@@ -111,7 +121,7 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
             <span>Livraison</span>
             <span>
               {shippingCost === 0
-                ? 'Calculée à l\'étape suivante'
+                ? "Calculée à l'étape suivante"
                 : `${shippingCost.toFixed(2).replace('.', ',')}€`}
             </span>
           </div>
@@ -126,6 +136,27 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
   )
 }
 
+// ─── Formulaire nouvelle adresse ──────────────────────────────────────────────
+// Address réel : { _id, fullName, phone, street, city, postalCode, country, isDefault }
+
+interface NewAddressForm {
+  fullName:   string
+  phone:      string
+  street:     string
+  city:       string
+  postalCode: string
+  country:    string
+}
+
+const EMPTY_ADDRESS: NewAddressForm = {
+  fullName:   '',
+  phone:      '',
+  street:     '',
+  city:       '',
+  postalCode: '',
+  country:    'FR',
+}
+
 // ─── Étape 1 : Livraison ──────────────────────────────────────────────────────
 
 function StepLivraison({
@@ -134,41 +165,47 @@ function StepLivraison({
   onNext: (addressId: string, carrierId: string, shippingCost: number) => void
 }) {
   const { items } = useCartStore()
-  const hasPhysical = items.some(i => i.format === 'paper')
+  const hasPhysical = items.some(i => i.type === 'paper')
 
-  const [addresses,        setAddresses]        = useState<Address[]>([])
-  const [carriers,         setCarriers]          = useState<Carrier[]>([])
-  const [selectedAddress,  setSelectedAddress]   = useState('')
-  const [selectedCarrier,  setSelectedCarrier]   = useState('')
-  const [showNewAddress,   setShowNewAddress]     = useState(false)
-  const [loading,          setLoading]            = useState(true)
-  const [newAddr, setNewAddr] = useState<Omit<Address, '_id'>>({
-    firstName: '', lastName: '', line1: '', line2: '',
-    city: '', postalCode: '', country: 'FR', phone: '',
-  })
+  const [addresses,       setAddresses]       = useState<Address[]>([])
+  const [carriers,        setCarriers]         = useState<Carrier[]>([])
+  const [selectedAddress, setSelectedAddress]  = useState('')
+  const [selectedCarrier, setSelectedCarrier]  = useState('')
+  const [showNewAddress,  setShowNewAddress]   = useState(false)
+  const [loading,         setLoading]          = useState(true)
+  const [saving,          setSaving]           = useState(false)
+  const [newAddr,         setNewAddr]          = useState<NewAddressForm>(EMPTY_ADDRESS)
 
   useEffect(() => {
     Promise.all([
-      addressService.getAddresses(),
-      // Si ton service carriers existe :
-      // carrierService.getCarriers()
+      addressService.getAll(),
+      // Décommente si tu as un carrierService :
+      // carrierService.getAll(),
       Promise.resolve([] as Carrier[]),
-    ]).then(([addrs, cars]) => {
-      setAddresses(addrs)
-      setCarriers(cars)
-      const def = addrs.find(a => a.isDefault)
-      if (def?._id) setSelectedAddress(def._id)
-      if (cars[0]) setSelectedCarrier(cars[0]._id)
-    }).finally(() => setLoading(false))
+    ])
+      .then(([addrs, cars]) => {
+        setAddresses(addrs)
+        setCarriers(cars)
+        const def = addrs.find((a: Address) => a.isDefault)
+        if (def?._id) setSelectedAddress(def._id)
+        if (cars[0])  setSelectedCarrier(cars[0]._id)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const handleSaveAddress = async () => {
+    setSaving(true)
     try {
-      const saved = await addressService.createAddress(newAddr as Address)
+      const saved = await addressService.create(newAddr as unknown as Omit<Address, '_id'>)
       setAddresses(prev => [...prev, saved])
-      setSelectedAddress(saved._id!)
+      setSelectedAddress(saved._id)
       setShowNewAddress(false)
-    } catch (err) { console.error(err) }
+      setNewAddr(EMPTY_ADDRESS)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleNext = () => {
@@ -180,12 +217,14 @@ function StepLivraison({
 
   if (loading) return (
     <div className="flex justify-center py-16">
-      <div className="w-8 h-8 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent
+                      rounded-full animate-spin" />
     </div>
   )
 
   return (
     <div className="space-y-6">
+
       {/* Commande 100% numérique */}
       {!hasPhysical ? (
         <div className="p-5 rounded-2xl bg-green-50 border border-green-200 text-center">
@@ -197,31 +236,38 @@ function StepLivraison({
         </div>
       ) : (
         <>
-          {/* Adresses */}
+          {/* Adresses existantes */}
           <div>
             <h3 className="font-bold text-gray-900 mb-3">Adresse de livraison</h3>
             <div className="space-y-3">
-              {addresses.map(addr => (
-                <label key={addr._id}
+              {addresses.map((addr: Address) => (
+                <label
+                  key={addr._id}
                   className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer
                               transition-all ${
                     selectedAddress === addr._id
                       ? 'border-indigo-400 bg-indigo-50'
                       : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}>
-                  <input type="radio" name="address" value={addr._id}
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="address"
+                    value={addr._id}
                     checked={selectedAddress === addr._id}
-                    onChange={() => setSelectedAddress(addr._id!)}
-                    className="mt-0.5 accent-indigo-500" />
+                    onChange={() => setSelectedAddress(addr._id)}
+                    className="mt-0.5 accent-indigo-500"
+                  />
                   <div className="text-sm">
-                    <p className="font-semibold text-gray-900">
-                      {addr.firstName} {addr.lastName}
-                    </p>
-                    <p className="text-gray-500">{addr.line1}</p>
-                    {addr.line2 && <p className="text-gray-500">{addr.line2}</p>}
+                    {/* Address réel : fullName, street, city, postalCode, country */}
+                    <p className="font-semibold text-gray-900">{addr.fullName}</p>
+                    <p className="text-gray-500">{addr.street}</p>
                     <p className="text-gray-500">
                       {addr.postalCode} {addr.city}, {addr.country}
                     </p>
+                    {addr.phone && (
+                      <p className="text-gray-400 text-xs mt-0.5">{addr.phone}</p>
+                    )}
                   </div>
                 </label>
               ))}
@@ -229,54 +275,68 @@ function StepLivraison({
               {/* Nouvelle adresse */}
               {showNewAddress ? (
                 <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50 space-y-3">
+                  <input
+                    placeholder="Nom complet"
+                    value={newAddr.fullName}
+                    onChange={e => setNewAddr(p => ({ ...p, fullName: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm
+                               bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
+                  <input
+                    placeholder="Rue / Adresse"
+                    value={newAddr.street}
+                    onChange={e => setNewAddr(p => ({ ...p, street: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm
+                               bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
                   <div className="grid grid-cols-2 gap-3">
-                    {(['firstName', 'lastName'] as const).map(field => (
-                      <input key={field}
-                        placeholder={field === 'firstName' ? 'Prénom' : 'Nom'}
-                        value={newAddr[field]}
-                        onChange={e => setNewAddr(p => ({ ...p, [field]: e.target.value }))}
-                        className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white
-                                   focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-                    ))}
-                  </div>
-                  <input placeholder="Adresse ligne 1" value={newAddr.line1}
-                    onChange={e => setNewAddr(p => ({ ...p, line1: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white
-                               focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-                  <input placeholder="Adresse ligne 2 (optionnel)" value={newAddr.line2}
-                    onChange={e => setNewAddr(p => ({ ...p, line2: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white
-                               focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <input placeholder="Code postal" value={newAddr.postalCode}
+                    <input
+                      placeholder="Code postal"
+                      value={newAddr.postalCode}
                       onChange={e => setNewAddr(p => ({ ...p, postalCode: e.target.value }))}
-                      className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
-                    <input placeholder="Ville" value={newAddr.city}
+                      className="px-3 py-2 rounded-lg border border-gray-200 text-sm
+                                 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    />
+                    <input
+                      placeholder="Ville"
+                      value={newAddr.city}
                       onChange={e => setNewAddr(p => ({ ...p, city: e.target.value }))}
-                      className="px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white
-                                 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                      className="px-3 py-2 rounded-lg border border-gray-200 text-sm
+                                 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    />
                   </div>
-                  <input placeholder="Téléphone" value={newAddr.phone}
+                  <input
+                    placeholder="Téléphone"
+                    value={newAddr.phone}
                     onChange={e => setNewAddr(p => ({ ...p, phone: e.target.value }))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm bg-white
-                               focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm
+                               bg-white focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  />
                   <div className="flex gap-2">
-                    <button onClick={handleSaveAddress}
-                      className="flex-1 py-2.5 bg-indigo-500 text-white text-sm font-semibold rounded-lg hover:bg-indigo-600">
-                      Sauvegarder
+                    <button
+                      onClick={handleSaveAddress}
+                      disabled={saving}
+                      className="flex-1 py-2.5 bg-indigo-500 text-white text-sm font-semibold
+                                 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
+                    >
+                      {saving ? 'Sauvegarde...' : 'Sauvegarder'}
                     </button>
-                    <button onClick={() => setShowNewAddress(false)}
-                      className="px-4 py-2.5 bg-white border border-gray-200 text-sm text-gray-600 rounded-lg hover:bg-gray-50">
+                    <button
+                      onClick={() => { setShowNewAddress(false); setNewAddr(EMPTY_ADDRESS) }}
+                      className="px-4 py-2.5 bg-white border border-gray-200 text-sm
+                                 text-gray-600 rounded-lg hover:bg-gray-50"
+                    >
                       Annuler
                     </button>
                   </div>
                 </div>
               ) : (
-                <button onClick={() => setShowNewAddress(true)}
+                <button
+                  onClick={() => setShowNewAddress(true)}
                   className="flex items-center gap-2 w-full p-4 rounded-xl border border-dashed
                              border-gray-300 text-sm text-gray-500
-                             hover:border-indigo-300 hover:text-indigo-500 transition-colors">
+                             hover:border-indigo-300 hover:text-indigo-500 transition-colors"
+                >
                   <span className="text-lg">+</span> Ajouter une adresse
                 </button>
               )}
@@ -289,18 +349,24 @@ function StepLivraison({
               <h3 className="font-bold text-gray-900 mb-3">Mode de livraison</h3>
               <div className="space-y-2">
                 {carriers.map(carrier => (
-                  <label key={carrier._id}
+                  <label
+                    key={carrier._id}
                     className={`flex items-center justify-between p-4 rounded-xl border
                                 cursor-pointer transition-all ${
                       selectedCarrier === carrier._id
                         ? 'border-indigo-400 bg-indigo-50'
                         : 'border-gray-200 bg-white hover:border-gray-300'
-                    }`}>
+                    }`}
+                  >
                     <div className="flex items-center gap-3">
-                      <input type="radio" name="carrier" value={carrier._id}
+                      <input
+                        type="radio"
+                        name="carrier"
+                        value={carrier._id}
                         checked={selectedCarrier === carrier._id}
                         onChange={() => setSelectedCarrier(carrier._id)}
-                        className="accent-indigo-500" />
+                        className="accent-indigo-500"
+                      />
                       <div>
                         <p className="text-sm font-semibold text-gray-900">{carrier.name}</p>
                         <p className="text-xs text-gray-500">{carrier.delay}</p>
@@ -357,18 +423,30 @@ function StripePaymentForm({
     setError(null)
 
     try {
-      // 1. Créer le checkout côté backend
-      const { clientSecret, orderId } = await paymentService.createCheckout({
+      // Adapte l'appel selon les méthodes réelles de ton paymentService.
+      // Exemple : paymentService.createIntent({ ... })
+      // Remplace par le nom exact de ta méthode.
+      const result = await (paymentService as any).createIntent?.({
         items: items.map(i => ({
-          bookId:   i.book._id,
-          format:   i.format,
-          quantity: i.quantity,
+          bookId: i.bookId,
+          type:   i.type,       // 'digital' | 'paper'
+          price:  i.price,
+        })),
+        addressId: addressId || undefined,
+        carrierId: carrierId || undefined,
+      }) ?? await (paymentService as any).createCheckoutSession?.({
+        items: items.map(i => ({
+          bookId: i.bookId,
+          type:   i.type,
+          price:  i.price,
         })),
         addressId: addressId || undefined,
         carrierId: carrierId || undefined,
       })
 
-      // 2. Confirmer avec Stripe
+      const { clientSecret, orderId } = result
+
+      // Confirmer avec Stripe
       const cardElement = elements.getElement(CardElement)
       if (!cardElement) throw new Error('Card element not found')
 
@@ -387,7 +465,7 @@ function StripePaymentForm({
         onSuccess(orderId)
       }
     } catch (err: any) {
-      setError(err.message ?? 'Une erreur est survenue')
+      setError(err.message ?? err.response?.data?.message ?? 'Une erreur est survenue')
     } finally {
       setLoading(false)
     }
@@ -429,13 +507,17 @@ function StripePaymentForm({
         <span>🛡 PCI-DSS</span>
       </div>
 
-      <button type="submit" disabled={!stripe || loading}
+      <button
+        type="submit"
+        disabled={!stripe || loading}
         className="w-full py-3.5 bg-indigo-500 text-white font-bold rounded-xl
                    hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed
-                   transition-colors text-sm flex items-center justify-center gap-2">
+                   transition-colors text-sm flex items-center justify-center gap-2"
+      >
         {loading ? (
           <>
-            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <span className="w-4 h-4 border-2 border-white/30 border-t-white
+                             rounded-full animate-spin" />
             Traitement en cours...
           </>
         ) : '🔒 Payer maintenant'}
@@ -464,14 +546,18 @@ function StepConfirmation({ orderId }: { orderId: string }) {
         </p>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
-        <button onClick={() => navigate('/bibliotheque')}
+        <button
+          onClick={() => navigate('/bibliotheque')}
           className="flex-1 py-3 bg-indigo-500 text-white font-semibold rounded-xl
-                     text-sm hover:bg-indigo-600 transition-colors">
+                     text-sm hover:bg-indigo-600 transition-colors"
+        >
           📚 Ma bibliothèque
         </button>
-        <button onClick={() => navigate('/catalogue')}
+        <button
+          onClick={() => navigate('/catalogue')}
           className="flex-1 py-3 bg-white border border-gray-200 text-gray-700
-                     font-semibold rounded-xl text-sm hover:bg-gray-50 transition-colors">
+                     font-semibold rounded-xl text-sm hover:bg-gray-50 transition-colors"
+        >
           Continuer mes achats
         </button>
       </div>
@@ -482,7 +568,7 @@ function StepConfirmation({ orderId }: { orderId: string }) {
 // ─── Page Checkout ────────────────────────────────────────────────────────────
 
 export default function CheckoutPage() {
-  const { items }          = useCartStore()
+  const { items }           = useCartStore()
   const { isAuthenticated } = useAuthStore()
   const navigate            = useNavigate()
 
@@ -509,6 +595,7 @@ export default function CheckoutPage() {
       <Stepper current={step} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
         {/* Formulaire */}
         <div className="lg:col-span-2">
           {step === 'livraison' && (
@@ -517,8 +604,10 @@ export default function CheckoutPage() {
 
           {step === 'paiement' && (
             <div className="space-y-4">
-              <button onClick={() => setStep('livraison')}
-                className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1">
+              <button
+                onClick={() => setStep('livraison')}
+                className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1"
+              >
                 ← Modifier la livraison
               </button>
               <Elements stripe={stripePromise}>
