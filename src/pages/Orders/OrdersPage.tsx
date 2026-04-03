@@ -64,7 +64,8 @@ export default function OrdersPage() {
     if (!isAuthenticated) { navigate('/login'); return }
 
     orderService.getMyOrders()
-      .then(data => setOrders(data as Order[]))
+      // .then(data => setOrders(data as Order[]))
+      .then((data: Order[]) => setOrders(data))
       .catch(() => setError('Impossible de charger vos commandes.'))
       .finally(() => setLoading(false))
   }, [isAuthenticated, navigate])
