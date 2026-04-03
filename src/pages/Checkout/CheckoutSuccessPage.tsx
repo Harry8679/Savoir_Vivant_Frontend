@@ -70,7 +70,7 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
       <div className="space-y-3 mb-4">
         {items.map(item => (
           <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
-            <div className="w-9 h-12 rounded-lg flex-shrink-0 overflow-hidden">
+            <div className="w-9 h-12 rounded-lg shrink-0 overflow-hidden">
               {item.coverUrl ? (
                 <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -83,7 +83,7 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
                 {item.type === 'digital' ? 'Numérique' : 'Papier'}
               </p>
             </div>
-            <span className="text-xs font-bold text-gray-900 flex-shrink-0">
+            <span className="text-xs font-bold text-gray-900 shrink-0">
               {item.price.toFixed(2).replace('.', ',')}€
             </span>
           </div>
@@ -377,7 +377,7 @@ function StepPaiement({
         <h3 className="font-bold text-gray-900 text-sm mb-1">Articles</h3>
         {items.map(item => (
           <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
-            <div className="w-8 h-10 rounded-lg flex-shrink-0 overflow-hidden">
+            <div className="w-8 h-10 rounded-lg shrink-0 overflow-hidden">
               {item.coverUrl ? (
                 <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -390,7 +390,7 @@ function StepPaiement({
                 {item.type === 'digital' ? '📱 Numérique' : '📦 Papier'}
               </p>
             </div>
-            <span className="text-sm font-bold text-gray-900 flex-shrink-0">
+            <span className="text-sm font-bold text-gray-900 shrink-0">
               {item.price.toFixed(2).replace('.', ',')}€
             </span>
           </div>
