@@ -85,7 +85,7 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
         {items.map(item => (
           <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
             {/* Couverture */}
-            <div className="w-9 h-12 rounded-lg flex-shrink-0 overflow-hidden">
+            <div className="w-9 h-12 rounded-lg shrink-0 overflow-hidden">
               {item.coverUrl ? (
                 <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -104,7 +104,7 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
             </div>
 
             {/* Prix */}
-            <span className="text-xs font-bold text-gray-900 flex-shrink-0">
+            <span className="text-xs font-bold text-gray-900 shrink-0">
               {item.price.toFixed(2).replace('.', ',')}€
             </span>
           </div>
