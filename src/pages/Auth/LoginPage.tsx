@@ -87,7 +87,7 @@ export default function LoginPage() {
 
       {/* Panel gauche décoratif */}
       <div className="hidden lg:flex flex-col justify-between w-1/2
-                      bg-gradient-to-br from-indigo-600 to-violet-700 p-12 text-white">
+                      bg-linear-to-br from-indigo-600 to-violet-700 p-12 text-white">
         <Link to="/" className="flex items-center gap-2">
           <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center
                           justify-center text-lg">📖</div>
