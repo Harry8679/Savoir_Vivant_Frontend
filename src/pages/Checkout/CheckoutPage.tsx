@@ -79,7 +79,7 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
       <div className="space-y-3 mb-4">
         {items.map(item => (
           <div key={`${item.book._id}-${item.format}`} className="flex items-center gap-3">
-            <div className="w-9 h-12 rounded-lg flex-shrink-0 overflow-hidden">
+            <div className="w-9 h-12 rounded-lg shrink-0 overflow-hidden">
               {item.book.coverUrl ? (
                 <img src={item.book.coverUrl} alt="" className="w-full h-full object-cover" />
               ) : (
