@@ -54,9 +54,9 @@ export default function ProfilePage() {
 
       {/* Header */}
       <div className="flex items-center gap-5 mb-8 pb-8 border-b border-gray-100">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-400
+        <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-indigo-400
                         to-violet-500 flex items-center justify-center text-white
-                        text-2xl font-extrabold flex-shrink-0">
+                        text-2xl font-extrabold shrink-0">
           {user.avatarUrl ? (
             <img
               src={user.avatarUrl}
