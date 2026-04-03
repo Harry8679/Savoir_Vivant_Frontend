@@ -44,7 +44,7 @@ function BookCard({ book }: { book: Book }) {
                  hover:border-gray-200 hover:shadow-lg transition-all duration-200"
     >
       {/* Couverture */}
-      <div className="w-24 min-w-24 h-32 rounded-xl flex-shrink-0 overflow-hidden shadow-md">
+      <div className="w-24 min-w-24 h-32 rounded-xl shrink-0 overflow-hidden shadow-md">
         {book.coverUrl ? (
           <img
             src={book.coverUrl}
@@ -166,7 +166,7 @@ function BookCard({ book }: { book: Book }) {
 function Skeleton() {
   return (
     <div className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 animate-pulse">
-      <div className="w-24 min-w-24 h-32 rounded-xl bg-gray-200 flex-shrink-0" />
+      <div className="w-24 min-w-24 h-32 rounded-xl bg-gray-200 shrink-0" />
       <div className="flex-1 space-y-3 pt-1">
         <div className="h-2.5 bg-gray-200 rounded w-1/3" />
         <div className="h-4 bg-gray-200 rounded w-3/4" />
@@ -216,7 +216,7 @@ function CollectionFilter({
       </button>
       {collections.map(c => (
         <button key={c._id} onClick={() => onSelect(c._id)} className={fc(activeCol === c._id)}>
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: c.color }} />
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: c.color }} />
           {c.name}
         </button>
       ))}
@@ -275,7 +275,7 @@ export default function CataloguePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex gap-8">
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="w-52 min-w-52 flex-shrink-0 hidden md:block">
+      <aside className="w-52 min-w-52 shrink-0 hidden md:block">
 
         {/* Recherche */}
         <div className="relative mb-7">
@@ -339,7 +339,7 @@ export default function CataloguePage() {
         </div>
 
         {/* Banner abonnement */}
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-violet-50
+        <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-indigo-50 to-violet-50
                         border border-indigo-100 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-bold text-indigo-700">
@@ -352,7 +352,7 @@ export default function CataloguePage() {
           <Link
             to="/abonnement"
             className="text-xs font-semibold bg-indigo-500 text-white px-4 py-2 rounded-xl
-                       hover:bg-indigo-600 transition-colors whitespace-nowrap flex-shrink-0"
+                       hover:bg-indigo-600 transition-colors whitespace-nowrap shrink-0"
           >
             S'abonner →
           </Link>
