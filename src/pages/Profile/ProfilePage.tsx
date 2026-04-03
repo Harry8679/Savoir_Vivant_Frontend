@@ -9,9 +9,9 @@ export default function ProfilePage() {
 
   // user.name est le seul champ nom dans ton User type
   // On découpe en prénom / nom sur l'espace (ex: "Harry MacCode" → "Harry" / "MacCode")
-  const nameParts  = user?.name?.split(' ') ?? ['', '']
-  const firstName  = nameParts[0] ?? ''
-  const lastName   = nameParts.slice(1).join(' ') ?? ''
+  // const nameParts  = user?.name?.split(' ') ?? ['', '']
+  // const firstName  = nameParts[0] ?? ''
+  // const lastName   = nameParts.slice(1).join(' ') ?? ''
   const initials   = user?.name
     ? user.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
     : '?'
