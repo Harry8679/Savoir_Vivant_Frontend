@@ -31,7 +31,7 @@ function BookCard({ book }: { book: Book }) {
                  hover:border-gray-200 hover:shadow-lg transition-all duration-200"
     >
       {/* Couverture */}
-      <div className="w-24 min-w-24 h-32 rounded-xl flex-shrink-0 overflow-hidden shadow-md">
+      <div className="w-24 min-w-24 h-32 rounded-xl shrink-0 overflow-hidden shadow-md">
         {book.coverUrl ? (
           <img
             src={book.coverUrl}
