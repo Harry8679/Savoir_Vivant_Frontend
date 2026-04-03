@@ -49,7 +49,7 @@
             { path: 'orders',       element: <OrdersPage /> },
             { path: 'subscription', element: <SubscriptionPage /> },
             { path: 'settings',     element: <SettingsPage /> },
-            { path: 'success',     element: <CheckoutSuccessPage /> },
+            { path: 'checkout/success',  element: <CheckoutSuccessPage /> },
           ],
         },
       ],
