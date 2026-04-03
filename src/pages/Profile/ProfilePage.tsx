@@ -1,6 +1,4 @@
-// ─── ProfilePage.tsx ────────────────────────────────────────────────────────
-// Chemin : src/pages/Profile/ProfilePage.tsx
-
+// src/pages/Profile/ProfilePage.tsx
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
@@ -9,9 +7,17 @@ export default function ProfilePage() {
   const { user, isAuthenticated, logout } = useAuthStore()
   const navigate = useNavigate()
 
+  // user.name est le seul champ nom dans ton User type
+  // On découpe en prénom / nom sur l'espace (ex: "Harry MacCode" → "Harry" / "MacCode")
+  const nameParts  = user?.name?.split(' ') ?? ['', '']
+  const firstName  = nameParts[0] ?? ''
+  const lastName   = nameParts.slice(1).join(' ') ?? ''
+  const initials   = user?.name
+    ? user.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
+    : '?'
+
   const [form, setForm] = useState({
-    firstName:       user?.firstName       ?? '',
-    lastName:        user?.lastName        ?? '',
+    name:            user?.name ?? '',
     currentPassword: '',
     newPassword:     '',
   })
@@ -19,7 +25,7 @@ export default function ProfilePage() {
   const [success, setSuccess] = useState(false)
 
   if (!isAuthenticated || !user) {
-    navigate('/connexion')
+    navigate('/login')
     return null
   }
 
@@ -27,7 +33,7 @@ export default function ProfilePage() {
     e.preventDefault()
     setSaving(true)
     try {
-      // await userService.updateProfile(form)
+      // await userService.updateProfile({ name: form.name, ... })
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } finally {
@@ -40,6 +46,9 @@ export default function ProfilePage() {
     navigate('/')
   }
 
+  // user.subscriptionStatus : 'active' | 'inactive' | 'cancelled' | 'past_due'
+  const isSubscribed = user.subscriptionStatus === 'active'
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
 
@@ -48,21 +57,27 @@ export default function ProfilePage() {
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-400
                         to-violet-500 flex items-center justify-center text-white
                         text-2xl font-extrabold flex-shrink-0">
-          {user.firstName[0]}{user.lastName[0]}
+          {user.avatarUrl ? (
+            <img
+              src={user.avatarUrl}
+              alt={user.name}
+              className="w-full h-full object-cover rounded-2xl"
+            />
+          ) : initials}
         </div>
+
         <div className="flex-1">
-          <h1 className="text-2xl font-extrabold text-gray-900">
-            {user.firstName} {user.lastName}
-          </h1>
+          <h1 className="text-2xl font-extrabold text-gray-900">{user.name}</h1>
           <p className="text-sm text-gray-500">{user.email}</p>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Membre depuis{' '}
-            {new Date(user.createdAt).toLocaleDateString('fr-FR', {
-              month: 'long', year: 'numeric',
-            })}
-          </p>
+          {user.role === 'admin' && (
+            <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100
+                             text-violet-700 font-semibold mt-1 inline-block">
+              Admin
+            </span>
+          )}
         </div>
-        {user.subscription?.status === 'active' && (
+
+        {isSubscribed && (
           <span className="text-xs px-3 py-1.5 rounded-full bg-indigo-100
                            text-indigo-600 font-bold border border-indigo-200">
             ∞ Abonné
@@ -73,15 +88,18 @@ export default function ProfilePage() {
       {/* Navigation rapide */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {[
-          { to: '/bibliotheque',  icon: '📚', label: 'Ma bibliothèque' },
-          { to: '/commandes',     icon: '📦', label: 'Mes commandes' },
-          { to: '/abonnement',    icon: '∞',  label: 'Abonnement' },
-          { to: '/parametres/adresses', icon: '📍', label: 'Mes adresses' },
+          { to: '/library',            icon: '📚', label: 'Ma bibliothèque' },
+          { to: '/orders',             icon: '📦', label: 'Mes commandes'   },
+          { to: '/subscription',       icon: '∞',  label: 'Abonnement'      },
+          { to: '/settings/addresses', icon: '📍', label: 'Mes adresses'    },
         ].map(item => (
-          <Link key={item.to} to={item.to}
+          <Link
+            key={item.to}
+            to={item.to}
             className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white
                        border border-gray-100 hover:border-indigo-200 hover:shadow-md
-                       transition-all text-center">
+                       transition-all text-center"
+          >
             <span className="text-2xl">{item.icon}</span>
             <span className="text-xs font-semibold text-gray-700">{item.label}</span>
           </Link>
@@ -95,24 +113,20 @@ export default function ProfilePage() {
         </h2>
 
         <form onSubmit={handleSave} className="space-y-5 max-w-lg">
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { field: 'firstName', label: 'Prénom' },
-              { field: 'lastName',  label: 'Nom' },
-            ].map(({ field, label }) => (
-              <div key={field} className="space-y-1.5">
-                <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
-                  {label}
-                </label>
-                <input
-                  value={form[field as keyof typeof form]}
-                  onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))}
-                  className="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm
-                             text-gray-900 focus:outline-none focus:border-indigo-400
-                             focus:ring-2 focus:ring-indigo-100"
-                />
-              </div>
-            ))}
+
+          {/* Nom complet */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+              Nom complet
+            </label>
+            <input
+              value={form.name}
+              onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+              placeholder="Harry MacCode"
+              className="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm
+                         text-gray-900 focus:outline-none focus:border-indigo-400
+                         focus:ring-2 focus:ring-indigo-100"
+            />
           </div>
 
           {/* Email (non modifiable) */}
@@ -120,9 +134,12 @@ export default function ProfilePage() {
             <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
               Email
             </label>
-            <input value={user.email} disabled
+            <input
+              value={user.email}
+              disabled
               className="w-full px-3.5 py-3 rounded-xl border border-gray-200 text-sm
-                         text-gray-400 bg-gray-50 cursor-not-allowed" />
+                         text-gray-400 bg-gray-50 cursor-not-allowed"
+            />
             <p className="text-xs text-gray-400">
               Pour changer votre email, contactez le support.
             </p>
@@ -136,13 +153,15 @@ export default function ProfilePage() {
             <div className="space-y-3">
               {[
                 { field: 'currentPassword', label: 'Mot de passe actuel',  auto: 'current-password' },
-                { field: 'newPassword',     label: 'Nouveau mot de passe', auto: 'new-password' },
+                { field: 'newPassword',     label: 'Nouveau mot de passe', auto: 'new-password'     },
               ].map(({ field, label, auto }) => (
                 <div key={field} className="space-y-1.5">
                   <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
                     {label}
                   </label>
-                  <input type="password" autoComplete={auto}
+                  <input
+                    type="password"
+                    autoComplete={auto}
                     value={form[field as keyof typeof form]}
                     onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))}
                     placeholder="••••••••"
@@ -162,13 +181,14 @@ export default function ProfilePage() {
             </div>
           )}
 
-          <div className="flex gap-3">
-            <button type="submit" disabled={saving}
-              className="px-6 py-2.5 bg-indigo-500 text-white font-semibold rounded-xl
-                         text-sm hover:bg-indigo-600 disabled:opacity-50 transition-colors">
-              {saving ? 'Sauvegarde...' : 'Sauvegarder'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="px-6 py-2.5 bg-indigo-500 text-white font-semibold rounded-xl
+                       text-sm hover:bg-indigo-600 disabled:opacity-50 transition-colors"
+          >
+            {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+          </button>
         </form>
       </div>
 
@@ -178,9 +198,11 @@ export default function ProfilePage() {
         <p className="text-sm text-gray-500 mb-4">
           La déconnexion supprimera votre session sur cet appareil.
         </p>
-        <button onClick={handleLogout}
+        <button
+          onClick={handleLogout}
           className="px-5 py-2.5 bg-red-50 text-red-600 font-semibold rounded-xl
-                     text-sm hover:bg-red-100 border border-red-200 transition-colors">
+                     text-sm hover:bg-red-100 border border-red-200 transition-colors"
+        >
           Se déconnecter
         </button>
       </div>
