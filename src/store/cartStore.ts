@@ -13,6 +13,7 @@ export interface CartItem {
   price:        number
   digitalPrice: number
   paperPrice:   number
+  quantity:     number 
 }
 
 interface CartStore {
