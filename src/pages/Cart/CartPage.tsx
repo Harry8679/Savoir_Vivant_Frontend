@@ -1,384 +1,205 @@
-// src/pages/Catalogue/CataloguePage.tsx
-import { useState, useEffect, useCallback } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import type { Book, BookFilters, BooksResponse } from '../../types/book.types'
-import { LEVEL_LABELS } from '../../types/book.types'
-import { bookService } from '../../services/book.service'
-import { useCartStore } from '../../store/cartStore'
+// src/pages/Cart/CartPage.tsx
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useCartStore, type CartItemType } from '../../store/cartStore'
+import { useAuthStore } from '../../store/authStore'
 
-const LEVEL_IDS = ['college', 'lycee', 'prepa', 'superieur'] as const
-
-// ─── BookCard ──────────────────────────────────────────────────────────────────
-
-function BookCard({ book }: { book: Book }) {
-  const { addItem, hasItem } = useCartStore()
-  const [flash, setFlash] = useState<'digital' | 'paper' | null>(null)
-
-  const inCartDigital = hasItem(book._id, 'digital')
-  const inCartPaper   = hasItem(book._id, 'paper')
-
-  const quickAdd = (e: React.MouseEvent, type: 'digital' | 'paper') => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (hasItem(book._id, type)) return
-
-    addItem({
-      bookId:       book._id,
-      title:        book.title,
-      author:       book.author,
-      coverUrl:     book.coverUrl ?? '',
-      slug:         book.slug,
-      type,
-      price:        type === 'digital' ? book.digitalPrice : book.paperPrice,
-      digitalPrice: book.digitalPrice,
-      paperPrice:   book.paperPrice,
-    })
-    setFlash(type)
-    setTimeout(() => setFlash(null), 1500)
-  }
-
-  return (
-    <Link
-      to={`/catalogue/${book.slug}`}
-      className="group flex gap-4 p-4 rounded-2xl bg-white border border-gray-100
-                 hover:border-gray-200 hover:shadow-lg transition-all duration-200"
-    >
-      {/* Couverture */}
-      <div className="w-24 min-w-24 h-32 rounded-xl shrink-0 overflow-hidden shadow-md">
-        {book.coverUrl ? (
-          <img
-            src={book.coverUrl}
-            alt={book.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div
-            className="w-full h-full flex flex-col justify-end p-2"
-            style={{
-              background: `${book.collectionId?.color ?? '#6366f1'}18`,
-              borderLeft: `3px solid ${book.collectionId?.color ?? '#6366f1'}`,
-            }}
-          >
-            <p className="text-[9px] font-bold text-gray-700 leading-tight line-clamp-3">
-              {book.title}
-            </p>
-          </div>
-        )}
+function CoverImage({ coverUrl, title }: { coverUrl: string; title: string }) {
+  const [error, setError] = useState(false)
+  if (!coverUrl || error) {
+    return (
+      <div className="w-full h-full bg-indigo-500 relative">
+        <div className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              -45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px,
+              transparent 1px, transparent 7px)`,
+          }} />
+        <div className="absolute bottom-0 left-0 right-0 p-1.5
+                        bg-gradient-to-t from-black/30 to-transparent">
+          <p className="text-[8px] font-bold text-white leading-tight line-clamp-2">{title}</p>
+        </div>
       </div>
+    )
+  }
+  return (
+    <img src={coverUrl} alt={title} className="w-full h-full object-cover"
+      onError={() => setError(true)} />
+  )
+}
 
-      {/* Infos */}
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+export default function CartPage() {
+  const navigate            = useNavigate()
+  const { isAuthenticated } = useAuthStore()
+  const { items, removeItem, updateType, clearCart, total } = useCartStore()
 
-        {/* Collection + abonnement */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span
-            className="text-[9px] font-black uppercase tracking-wider"
-            style={{ color: book.collectionId?.color ?? '#6366f1' }}
-          >
-            {book.collectionId?.name}
-          </span>
-          {book.isAvailableInSubscription && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-50
-                             text-indigo-500 font-semibold border border-indigo-100">
-              ∞ Abonnement
-            </span>
-          )}
-          {(inCartDigital || inCartPaper) && (
-            <span className="text-[9px] px-2 py-0.5 rounded-full bg-green-50
-                             text-green-600 font-semibold border border-green-100">
-              ✓ Dans le panier
-            </span>
-          )}
-        </div>
-
-        {/* Titre */}
-        <h3 className="text-sm font-bold text-gray-900 leading-snug line-clamp-2">
-          {book.title}
-        </h3>
-
-        {/* Niveaux + pages */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {book.levels.map(lvl => (
-            <span key={lvl}
-              className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50
-                         text-indigo-600 font-medium border border-indigo-100">
-              {LEVEL_LABELS[lvl]}
-            </span>
-          ))}
-          {book.pageCount && (
-            <span className="text-[10px] text-gray-400">{book.pageCount} pages</span>
-          )}
-        </div>
-
-        {/* Description */}
-        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">
-          {book.description}
+  if (items.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <div className="text-6xl mb-4">🛒</div>
+        <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Votre panier est vide</h1>
+        <p className="text-gray-500 text-sm mb-8">
+          Ajoutez des livres depuis le catalogue pour commencer.
         </p>
-
-        {/* Prix + CTA */}
-        <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-50">
-          <div>
-            <span className="text-base font-extrabold text-gray-900">
-              {book.digitalPrice.toFixed(2).replace('.', ',')}€
-            </span>
-            <span className="text-[10px] text-gray-400 ml-1.5">
-              ou {book.paperPrice.toFixed(2).replace('.', ',')}€ papier
-            </span>
-          </div>
-
-          {/* Boutons quick-add au hover */}
-          <div className="hidden group-hover:flex gap-1.5">
-            <button
-              onClick={e => quickAdd(e, 'digital')}
-              disabled={inCartDigital}
-              className={`text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors ${
-                inCartDigital
-                  ? 'bg-green-100 text-green-600 cursor-default'
-                  : 'bg-indigo-500 text-white hover:bg-indigo-600'
-              }`}
-            >
-              {flash === 'digital' ? '✓' : inCartDigital ? '✓' : '+ Num.'}
-            </button>
-            <button
-              onClick={e => quickAdd(e, 'paper')}
-              disabled={inCartPaper}
-              className={`text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition-colors ${
-                inCartPaper
-                  ? 'bg-green-100 text-green-600 cursor-default'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {flash === 'paper' ? '✓' : inCartPaper ? '✓' : '+ Papier'}
-            </button>
-          </div>
-
-          <span className="text-xs font-semibold text-gray-500 group-hover:hidden">
-            Voir →
-          </span>
-        </div>
+        <Link to="/catalogue"
+          className="inline-block px-6 py-3 bg-indigo-500 text-white font-semibold
+                     rounded-xl hover:bg-indigo-600 transition-colors">
+          Parcourir le catalogue →
+        </Link>
       </div>
-    </Link>
-  )
-}
-
-// ─── Skeleton ──────────────────────────────────────────────────────────────────
-
-function Skeleton() {
-  return (
-    <div className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 animate-pulse">
-      <div className="w-24 min-w-24 h-32 rounded-xl bg-gray-200 shrink-0" />
-      <div className="flex-1 space-y-3 pt-1">
-        <div className="h-2.5 bg-gray-200 rounded w-1/3" />
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
-        <div className="flex gap-2">
-          <div className="h-5 w-16 bg-gray-100 rounded-full" />
-          <div className="h-5 w-20 bg-gray-100 rounded-full" />
-        </div>
-        <div className="space-y-1.5">
-          <div className="h-2.5 bg-gray-100 rounded" />
-          <div className="h-2.5 bg-gray-100 rounded w-5/6" />
-        </div>
-        <div className="flex justify-between pt-1">
-          <div className="h-4 w-20 bg-gray-200 rounded" />
-          <div className="h-6 w-16 bg-gray-200 rounded" />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Filtre collections ────────────────────────────────────────────────────────
-
-function CollectionFilter({
-  activeCol,
-  onSelect,
-}: {
-  activeCol: string
-  onSelect:  (id: string) => void
-}) {
-  const [collections, setCollections] = useState<
-    Array<{ _id: string; name: string; color: string }>
-  >([])
-
-  useEffect(() => {
-    bookService.getCollections?.()
-      .then(setCollections)
-      .catch(() => {})
-  }, [])
-
-  return (
-    <div>
-      <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
-        Collections
-      </p>
-      <button onClick={() => onSelect('all')} className={fc(activeCol === 'all')}>
-        Toutes les collections
-      </button>
-      {collections.map(c => (
-        <button key={c._id} onClick={() => onSelect(c._id)} className={fc(activeCol === c._id)}>
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: c.color }} />
-          {c.name}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-const fc = (active: boolean) =>
-  `flex items-center gap-2.5 w-full text-left px-2.5 py-2 rounded-lg text-xs font-medium
-   mb-0.5 transition-colors ${
-     active
-       ? 'bg-indigo-50 text-indigo-600 font-semibold'
-       : 'text-gray-600 hover:bg-gray-100'
-   }`
-
-// ─── Page ──────────────────────────────────────────────────────────────────────
-
-export default function CataloguePage() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [books,   setBooks]   = useState<Book[]>([])
-  const [total,   setTotal]   = useState(0)
-  const [loading, setLoading] = useState(true)
-
-  const activeCol   = searchParams.get('collection') ?? 'all'
-  const activeLevel = searchParams.get('level')      ?? 'all'
-  const search      = searchParams.get('q')          ?? ''
-
-  const setParam = (key: string, value: string) => {
-    const next = new URLSearchParams(searchParams)
-    if (!value || value === 'all') next.delete(key)
-    else next.set(key, value)
-    setSearchParams(next)
+    )
   }
 
-  const fetchBooks = useCallback(async () => {
-    setLoading(true)
-    try {
-      const filters: BookFilters = {}
-      if (activeCol   !== 'all') filters.collectionId = activeCol
-      if (activeLevel !== 'all') filters.level        = activeLevel
-      if (search)                filters.search       = search
-
-      const data: BooksResponse = await bookService.getAll(filters)
-      setBooks(data.books)
-      setTotal(data.total)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }, [activeCol, activeLevel, search])
-
-  useEffect(() => { fetchBooks() }, [fetchBooks])
+  const hasPhysical = items.some(i => i.type === 'paper')
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex gap-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="w-52 min-w-52 shrink-0 hidden md:block">
-
-        {/* Recherche */}
-        <div className="relative mb-7">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">
-            🔍
+      {/* En-tête */}
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-2xl font-extrabold text-gray-900">
+          Mon panier{' '}
+          <span className="text-base font-normal text-gray-400">
+            ({items.length} article{items.length > 1 ? 's' : ''})
           </span>
-          <input
-            type="text"
-            defaultValue={search}
-            placeholder="Rechercher un livre..."
-            onKeyDown={e => {
-              if (e.key === 'Enter')
-                setParam('q', (e.target as HTMLInputElement).value)
-            }}
-            onChange={e => { if (!e.target.value) setParam('q', '') }}
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 bg-white
-                       text-sm text-gray-800 placeholder:text-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-indigo-300"
-          />
-        </div>
+        </h1>
+        <button onClick={clearCart}
+          className="text-sm text-red-400 hover:text-red-600 transition-colors">
+          Vider le panier
+        </button>
+      </div>
 
-        {/* Collections */}
-        <CollectionFilter activeCol={activeCol} onSelect={v => setParam('collection', v)} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        {/* Niveaux */}
-        <div className="mt-6">
-          <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-3">
-            Niveau
-          </p>
-          <button
-            onClick={() => setParam('level', 'all')}
-            className={fc(activeLevel === 'all')}
-          >
-            Tous les niveaux
-          </button>
-          {LEVEL_IDS.map(lvl => (
-            <button
-              key={lvl}
-              onClick={() => setParam('level', lvl)}
-              className={fc(activeLevel === lvl)}
-            >
-              {LEVEL_LABELS[lvl]}
-            </button>
+        {/* ── Articles ───────────────────────────────────────────────────── */}
+        <div className="lg:col-span-2 space-y-3">
+          {items.map(item => (
+            <div key={`${item.bookId}-${item.type}`}
+              className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
+
+              {/* Couverture */}
+              <div className="w-16 min-w-16 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow">
+                <CoverImage coverUrl={item.coverUrl} title={item.title} />
+              </div>
+
+              {/* Infos */}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 line-clamp-1 mb-0.5">
+                  {item.title}
+                </p>
+                <p className="text-[10px] text-gray-400 mb-3">par {item.author}</p>
+
+                {/* Toggle Numérique / Papier */}
+                <div className="flex gap-1.5">
+                  {(['digital', 'paper'] as CartItemType[]).map(t => (
+                    <button key={t} onClick={() => updateType(item.bookId, t)}
+                      className={`text-[10px] font-semibold px-2.5 py-1 rounded-full
+                                  transition-colors ${
+                        item.type === t
+                          ? t === 'digital' ? 'bg-indigo-500 text-white' : 'bg-amber-500 text-white'
+                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}>
+                      {t === 'digital' ? '📱 Numérique' : '📦 Papier'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Prix + supprimer */}
+              <div className="flex flex-col items-end justify-between">
+                <span className="text-base font-extrabold text-gray-900">
+                  {item.price.toFixed(2).replace('.', ',')}€
+                </span>
+                <button onClick={() => removeItem(item.bookId, item.type)}
+                  className="text-gray-300 hover:text-red-400 transition-colors text-sm mt-2">
+                  🗑
+                </button>
+              </div>
+            </div>
           ))}
-        </div>
-      </aside>
 
-      {/* ── Main ─────────────────────────────────────────────────────────── */}
-      <main className="flex-1 min-w-0">
-
-        {/* En-tête */}
-        <div className="flex items-baseline gap-3 mb-5">
-          <h1 className="text-xl font-extrabold text-gray-900">
-            {activeCol === 'all' ? 'Tous les livres' : 'Catalogue'}
-          </h1>
-          {!loading && (
-            <span className="text-sm text-gray-400">
-              {total} livre{total > 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-
-        {/* Banner abonnement */}
-        <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-indigo-50 to-violet-50
-                        border border-indigo-100 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold text-indigo-700">
-              ∞ Accès illimité à toute la bibliothèque
-            </p>
-            <p className="text-xs text-indigo-500 mt-0.5">
-              Tous les livres numériques inclus — 9€/mois ou 79€/an
-            </p>
-          </div>
-          <Link
-            to="/abonnement"
-            className="text-xs font-semibold bg-indigo-500 text-white px-4 py-2 rounded-xl
-                       hover:bg-indigo-600 transition-colors whitespace-nowrap shrink-0"
-          >
-            S'abonner →
+          <Link to="/catalogue" className="block text-sm text-indigo-500 hover:underline mt-2">
+            ← Continuer mes achats
           </Link>
         </div>
 
-        {/* Grille */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} />)
-            : books.length === 0
-              ? (
-                <div className="col-span-2 text-center py-20">
-                  <div className="text-4xl mb-3">📚</div>
-                  <p className="text-gray-500">Aucun livre trouvé pour ces filtres.</p>
-                  <button
-                    onClick={() => setSearchParams({})}
-                    className="mt-4 text-sm text-indigo-500 hover:underline"
-                  >
-                    Réinitialiser les filtres
-                  </button>
+        {/* ── Récapitulatif ──────────────────────────────────────────────── */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-24">
+            <h2 className="font-bold text-gray-900 mb-5 text-base">Récapitulatif</h2>
+
+            <div className="space-y-2 mb-4">
+              {items.map(item => (
+                <div key={`${item.bookId}-${item.type}`}
+                  className="flex justify-between text-xs text-gray-500">
+                  <span className="line-clamp-1 flex-1 mr-2">
+                    {item.title}{' '}
+                    <span className={item.type === 'digital' ? 'text-indigo-400' : 'text-amber-500'}>
+                      ({item.type === 'digital' ? 'Num.' : 'Papier'})
+                    </span>
+                  </span>
+                  <span className="flex-shrink-0 font-medium text-gray-700">
+                    {item.price.toFixed(2).replace('.', ',')}€
+                  </span>
                 </div>
-              )
-              : books.map(book => <BookCard key={book._id} book={book} />)
-          }
+              ))}
+            </div>
+
+            <div className="border-t border-gray-100 pt-3 mb-5">
+              {hasPhysical && (
+                <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+                  <span>Livraison</span>
+                  <span className="text-gray-400">Calculée à l'étape suivante</span>
+                </div>
+              )}
+              <div className="flex justify-between font-extrabold text-gray-900 text-base">
+                <span>Total</span>
+                <span>{total().toFixed(2).replace('.', ',')}€</span>
+              </div>
+            </div>
+
+            {isAuthenticated ? (
+              <button onClick={() => navigate('/checkout')}
+                className="w-full py-3.5 bg-indigo-500 text-white font-bold rounded-xl
+                           hover:bg-indigo-600 transition-colors text-sm">
+                Commander →
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <Link to="/connexion"
+                  className="block w-full py-3.5 bg-indigo-500 text-white font-bold
+                             rounded-xl text-sm text-center hover:bg-indigo-600 transition-colors">
+                  Connexion pour commander
+                </Link>
+                <Link to="/inscription"
+                  className="block w-full py-2.5 bg-white border border-gray-200 text-gray-700
+                             font-semibold rounded-xl text-sm text-center hover:bg-gray-50">
+                  Créer un compte
+                </Link>
+              </div>
+            )}
+
+            {items.some(i => i.type === 'digital') && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500 text-center mb-2">
+                  Accédez à tous les livres avec l'abonnement
+                </p>
+                <Link to="/subscription"
+                  className="block w-full py-2.5 bg-indigo-50 text-indigo-600 font-semibold
+                             rounded-xl text-xs text-center hover:bg-indigo-100 transition-colors">
+                  ∞ S'abonner pour 9€/mois
+                </Link>
+              </div>
+            )}
+
+            <div className="flex items-center justify-center gap-3 mt-4 text-[10px] text-gray-400">
+              <span>🔒 Sécurisé</span><span>·</span>
+              <span>💳 Stripe</span><span>·</span>
+              <span>↩ 14j</span>
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
