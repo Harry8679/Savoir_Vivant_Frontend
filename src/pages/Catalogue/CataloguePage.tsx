@@ -199,7 +199,7 @@ export default function CataloguePage() {
       if (activeLevel !== 'all') filters.level        = activeLevel
       if (search)                filters.search       = search
 
-      const data: BooksResponse = await bookService.getBooks(filters)
+      const data: BooksResponse = await bookService.getAll(filters)
       setBooks(data.books)
       setTotal(data.total)
     } catch (err) {
