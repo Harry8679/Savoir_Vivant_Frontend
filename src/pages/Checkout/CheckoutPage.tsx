@@ -23,6 +23,41 @@ const STEPS = [
   { id: 'paiement'  as Step, label: 'Paiement',  icon: '💳' },
 ]
 
+// ─── Couverture avec fallback coloré ──────────────────────────────────────────
+
+function CoverImage({ coverUrl, title }: { coverUrl: string; title: string }) {
+  const [error, setError] = useState(false)
+
+  if (!coverUrl || error) {
+    return (
+      <div className="w-full h-full bg-indigo-500 relative">
+        <div className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              -45deg, rgba(255,255,255,0.4) 0px, rgba(255,255,255,0.4) 1px,
+              transparent 1px, transparent 7px)`,
+          }}
+        />
+        <div className="absolute bottom-0 left-0 right-0 p-1
+                        bg-gradient-to-t from-black/30 to-transparent">
+          <p className="text-[7px] font-bold text-white leading-tight line-clamp-2">
+            {title}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={coverUrl}
+      alt={title}
+      className="w-full h-full object-cover"
+      onError={() => setError(true)}
+    />
+  )
+}
+
 // ─── Stepper ──────────────────────────────────────────────────────────────────
 
 function Stepper({ current }: { current: Step }) {
@@ -65,30 +100,36 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
   const grandTotal  = total() + (hasPhysical ? shippingCost : 0)
 
   return (
-    <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 sticky top-24">
+    <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 sticky top-28">
       <h3 className="font-bold text-gray-900 mb-4 text-sm">Récapitulatif</h3>
       <div className="space-y-3 mb-4">
-        {items.map(item => (
-          <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
-            <div className="w-9 h-12 rounded-lg shrink-0 overflow-hidden">
-              {item.coverUrl ? (
-                <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-indigo-100" />
-              )}
+        {items.map(item => {
+          const qty = item.quantity ?? 1
+          return (
+            <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
+              {/* Couverture */}
+              <div className="w-9 h-12 rounded-lg shrink-0 overflow-hidden shadow-sm">
+                <CoverImage coverUrl={item.coverUrl} title={item.title} />
+              </div>
+              {/* Infos */}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-gray-900 line-clamp-1">
+                  {item.title}
+                </p>
+                <p className="text-[10px] text-gray-400">
+                  {item.type === 'digital' ? 'Numérique' : 'Papier'}
+                  {qty > 1 && ` × ${qty}`}
+                </p>
+              </div>
+              {/* Prix */}
+              <span className="text-xs font-bold text-gray-900 shrink-0">
+                {(item.price * qty).toFixed(2).replace('.', ',')}€
+              </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-gray-900 line-clamp-1">{item.title}</p>
-              <p className="text-[10px] text-gray-400">
-                {item.type === 'digital' ? 'Numérique' : 'Papier'}
-              </p>
-            </div>
-            <span className="text-xs font-bold text-gray-900 shrink-0">
-              {item.price.toFixed(2).replace('.', ',')}€
-            </span>
-          </div>
-        ))}
+          )
+        })}
       </div>
+
       <div className="border-t border-gray-200 pt-3 space-y-1.5">
         <div className="flex justify-between text-xs text-gray-500">
           <span>Sous-total</span>
@@ -328,8 +369,6 @@ function StepLivraison({
 }
 
 // ─── Étape 2 : Paiement ───────────────────────────────────────────────────────
-// paymentService.buyDigital / buyPaper redirigent vers Stripe Checkout
-// → Pas de CardElement, pas d'import @stripe/react-stripe-js
 
 function StepPaiement({
   addressId,
@@ -348,8 +387,6 @@ function StepPaiement({
     setLoading(true)
     setError(null)
     try {
-      // Prend le premier item du panier pour la redirection Stripe
-      // (le backend gère la session par bookId)
       const firstItem = items[0]
       if (!firstItem) return
 
@@ -358,7 +395,6 @@ function StepPaiement({
       } else {
         await paymentService.buyPaper(firstItem.bookId, addressId, carrierId)
       }
-      // paymentService effectue window.location.href → redirection automatique
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
       setLoading(false)
@@ -372,34 +408,38 @@ function StepPaiement({
         ← Modifier la livraison
       </button>
 
-      {/* Récap articles */}
+      {/* Articles */}
       <div className="p-5 rounded-2xl bg-white border border-gray-100 shadow-sm space-y-3">
-        <h3 className="font-bold text-gray-900 text-sm mb-1">Articles</h3>
-        {items.map(item => (
-          <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
-            <div className="w-8 h-10 rounded-lg shrink-0 overflow-hidden">
-              {item.coverUrl ? (
-                <img src={item.coverUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-indigo-100" />
-              )}
+        <h3 className="font-bold text-gray-900 text-sm">Articles</h3>
+        {items.map(item => {
+          const qty = item.quantity ?? 1
+          return (
+            <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
+              <div className="w-10 h-12 rounded-lg shrink-0 overflow-hidden shadow-sm">
+                <CoverImage coverUrl={item.coverUrl} title={item.title} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 line-clamp-1">
+                  {item.title}
+                </p>
+                <p className="text-xs text-gray-400">
+                  {item.type === 'digital' ? '📱 Numérique' : '📦 Papier'}
+                  {qty > 1 && ` × ${qty}`}
+                </p>
+              </div>
+              <span className="text-sm font-bold text-gray-900 shrink-0">
+                {(item.price * qty).toFixed(2).replace('.', ',')}€
+              </span>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 line-clamp-1">{item.title}</p>
-              <p className="text-xs text-gray-400">
-                {item.type === 'digital' ? '📱 Numérique' : '📦 Papier'}
-              </p>
-            </div>
-            <span className="text-sm font-bold text-gray-900 shrink-0">
-              {item.price.toFixed(2).replace('.', ',')}€
-            </span>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Info Stripe */}
       <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100">
-        <p className="text-sm font-semibold text-indigo-700 mb-1">🔒 Paiement sécurisé Stripe</p>
+        <p className="text-sm font-semibold text-indigo-700 mb-1">
+          🔒 Paiement sécurisé Stripe
+        </p>
         <p className="text-xs text-indigo-500">
           Vous allez être redirigé vers la page de paiement Stripe
           pour finaliser votre commande en toute sécurité.
@@ -448,7 +488,7 @@ export default function CheckoutPage() {
   const [shippingCost, setShippingCost] = useState(0)
 
   useEffect(() => {
-    if (!isAuthenticated) navigate('/connexion')
+    if (!isAuthenticated) navigate('/login')
     if (items.length === 0) navigate('/catalogue')
   }, [isAuthenticated, items.length, navigate])
 
@@ -460,8 +500,10 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+    // ↓ pt-24 pour compenser la Navbar fixe (hauteur 72px)
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-10">
       <Stepper current={step} />
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {step === 'livraison' && (

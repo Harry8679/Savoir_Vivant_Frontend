@@ -21,7 +21,7 @@ function CoverImage({ coverUrl, title }: { coverUrl: string; title: string }) {
           }}
         />
         <div className="absolute bottom-0 left-0 right-0 p-1.5
-                        bg-gradient-to-t from-black/30 to-transparent">
+                        bg-linear-to-t from-black/30 to-transparent">
           <p className="text-[8px] font-bold text-white leading-tight line-clamp-2">
             {title}
           </p>
