@@ -8,15 +8,6 @@ import { paymentService } from '../../services/payment.service'
 import type { Address } from '../../types/address.types'
 import api from '@/services/api'
 
-// ─── Types locaux ─────────────────────────────────────────────────────────────
-
-interface Carrier {
-  _id:   string
-  name:  string
-  price: number
-  delay: string
-}
-
 type Step = 'livraison' | 'paiement'
 
 const STEPS = [
