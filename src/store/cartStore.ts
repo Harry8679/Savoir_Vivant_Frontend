@@ -1,3 +1,4 @@
+// src/store/cartStore.ts
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -37,7 +38,7 @@ export const useCartStore = create<CartStore>()(
         const exists = get().items.find(
           i => i.bookId === item.bookId && i.type === item.type
         )
-        if (exists) return // déjà dans le panier
+        if (exists) return
         set(state => ({
           items: [...state.items, { ...item, quantity: 1 }],
         }))
@@ -55,7 +56,12 @@ export const useCartStore = create<CartStore>()(
         set(state => ({
           items: state.items.map(i =>
             i.bookId === bookId
-              ? { ...i, type, price: type === 'digital' ? i.digitalPrice : i.paperPrice }
+              ? {
+                  ...i,
+                  type,
+                  price:    type === 'digital' ? i.digitalPrice : i.paperPrice,
+                  quantity: 1, // reset quantité au changement de format
+                }
               : i
           ),
         }))
@@ -77,11 +83,12 @@ export const useCartStore = create<CartStore>()(
 
       clearCart: () => set({ items: [] }),
 
+      // ?? 1 : sécurise les anciens items sans quantity dans le localStorage
       total: () =>
-        get().items.reduce((acc, i) => acc + i.price * i.quantity, 0),
+        get().items.reduce((acc, i) => acc + i.price * (i.quantity ?? 1), 0),
 
       count: () =>
-        get().items.reduce((acc, i) => acc + i.quantity, 0),
+        get().items.reduce((acc, i) => acc + (i.quantity ?? 1), 0),
 
       hasItem: (bookId, type) =>
         get().items.some(i => i.bookId === bookId && i.type === type),

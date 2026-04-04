@@ -149,7 +149,7 @@ export default function CartPage() {
                 </span>
                 {item.quantity > 1 && (
                   <span className="text-[10px] text-gray-400">
-                    {item.price.toFixed(2).replace('.', ',')}€ × {item.quantity}
+                    {item.price.toFixed(2).replace('.', ',')}€ × {item.quantity ?? 1}
                   </span>
                 )}
 
@@ -170,7 +170,7 @@ export default function CartPage() {
                         −
                       </button>
                       <span className="text-xs font-bold w-5 text-center text-gray-900">
-                        {item.quantity}
+                        {item.quantity ?? 1}
                       </span>
                       <button
                         onClick={() =>
@@ -227,7 +227,7 @@ export default function CartPage() {
                       ({item.type === 'digital' ? 'Num.' : 'Papier'})
                     </span>
                     {item.quantity > 1 && (
-                      <span className="text-gray-400"> ×{item.quantity}</span>
+                      <span className="text-gray-400"> ×{item.quantity ?? 1}</span>
                     )}
                   </span>
                   <span className="shrink-0 font-medium text-gray-700">
