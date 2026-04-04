@@ -16,7 +16,7 @@ function CoverImage({ coverUrl, title }: { coverUrl: string; title: string }) {
               transparent 1px, transparent 7px)`,
           }} />
         <div className="absolute bottom-0 left-0 right-0 p-1.5
-                        bg-gradient-to-t from-black/30 to-transparent">
+                        bg-linear-to-t from-black/30 to-transparent">
           <p className="text-[8px] font-bold text-white leading-tight line-clamp-2">{title}</p>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function CartPage() {
               className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm">
 
               {/* Couverture */}
-              <div className="w-16 min-w-16 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow">
+              <div className="w-16 min-w-16 h-20 rounded-xl overflow-hidden shrink-0 shadow">
                 <CoverImage coverUrl={item.coverUrl} title={item.title} />
               </div>
 
@@ -138,7 +138,7 @@ export default function CartPage() {
                       ({item.type === 'digital' ? 'Num.' : 'Papier'})
                     </span>
                   </span>
-                  <span className="flex-shrink-0 font-medium text-gray-700">
+                  <span className="shrink-0 font-medium text-gray-700">
                     {item.price.toFixed(2).replace('.', ',')}€
                   </span>
                 </div>
