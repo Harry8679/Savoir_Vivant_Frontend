@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore'
 import { addressService } from '../../services/address.service'
 import { paymentService } from '../../services/payment.service'
 import type { Address } from '../../types/address.types'
+import api from '@/services/api'
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
 
@@ -193,7 +194,7 @@ function StepLivraison({
   useEffect(() => {
     Promise.all([
       addressService.getAll(),
-      Promise.resolve([] as Carrier[]),
+      api.get<{ data: Carrier[] }>('/carriers').then(r => r.data.data),
     ])
       .then(([addrs, cars]) => {
         setAddresses(addrs)
