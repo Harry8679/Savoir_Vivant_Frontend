@@ -52,4 +52,10 @@ export const bookService = {
     const { data } = await api.get<ApiResponse<{ hasAccess: boolean }>>(`/books/${id}/access`)
     return data.data
   },
+
+  // Dans src/services/book.service.ts, ajoute cette méthode :
+  async getReadUrl(bookId: string): Promise<{ url: string }> {
+    const { data } = await api.get<ApiResponse<{ url: string }>>(`/books/${bookId}/read-url`)
+    return data.data
+  },
 }
