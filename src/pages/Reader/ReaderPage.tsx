@@ -39,12 +39,13 @@ export default function ReaderPage() {
       const { url } = await bookService.getReadUrl(bookId)
       setPdfUrl(url)
       refreshTimer.current = setTimeout(fetchUrl, 100_000)
-    } catch (err: any) {
-      if (err.status === 403 || err.response?.status === 403) {
-        setError("Vous n'avez pas accès à ce livre.")
-      } else {
-        setError('Impossible de charger le livre. Veuillez réessayer.')
-      }
+    } catch (err: unknown) {
+        const status = (err as { status?: number; response?: { status?: number } })
+        if (status?.status === 403 || status?.response?.status === 403) {
+            setError("Vous n'avez pas accès à ce livre.")
+        } else {
+            setError('Impossible de charger le livre. Veuillez réessayer.')
+        }
     }
   }, [bookId])
 
