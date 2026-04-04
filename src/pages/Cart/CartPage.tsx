@@ -21,7 +21,7 @@ function CoverImage({ coverUrl, title }: { coverUrl: string; title: string }) {
           }}
         />
         <div className="absolute bottom-0 left-0 right-0 p-1.5
-                        bg-linear-to-t from-black/30 to-transparent">
+                        bg-gradient-to-t from-black/30 to-transparent">
           <p className="text-[8px] font-bold text-white leading-tight line-clamp-2">
             {title}
           </p>
@@ -102,102 +102,103 @@ export default function CartPage() {
 
         {/* ── Articles ─────────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-3">
-          {items.map(item => (
-            <div
-              key={`${item.bookId}-${item.type}`}
-              className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
-            >
-              {/* Couverture */}
-              <div className="w-16 min-w-16 h-20 rounded-xl overflow-hidden shrink-0 shadow">
-                <CoverImage coverUrl={item.coverUrl} title={item.title} />
-              </div>
+          {items.map(item => {
+            // ?? 1 : sécurise les anciens items sans quantity dans le localStorage
+            const qty = item.quantity ?? 1
 
-              {/* Infos */}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900 line-clamp-1 mb-0.5">
-                  {item.title}
-                </p>
-                <p className="text-[10px] text-gray-400 mb-3">par {item.author}</p>
-
-                {/* Toggle Numérique / Papier */}
-                <div className="flex gap-1.5">
-                  {(['digital', 'paper'] as CartItemType[]).map(t => (
-                    <button
-                      key={t}
-                      onClick={() => updateType(item.bookId, t)}
-                      className={`text-[10px] font-semibold px-2.5 py-1 rounded-full
-                                  transition-colors ${
-                        item.type === t
-                          ? t === 'digital'
-                            ? 'bg-indigo-500 text-white'
-                            : 'bg-amber-500 text-white'
-                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                      }`}
-                    >
-                      {t === 'digital' ? '📱 Numérique' : '📦 Papier'}
-                    </button>
-                  ))}
+            return (
+              <div
+                key={`${item.bookId}-${item.type}`}
+                className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm"
+              >
+                {/* Couverture */}
+                <div className="w-16 min-w-16 h-20 rounded-xl overflow-hidden shrink-0 shadow">
+                  <CoverImage coverUrl={item.coverUrl} title={item.title} />
                 </div>
-              </div>
 
-              {/* Prix + quantité + supprimer */}
-              <div className="flex flex-col items-end justify-between">
+                {/* Infos */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-900 line-clamp-1 mb-0.5">
+                    {item.title}
+                  </p>
+                  <p className="text-[10px] text-gray-400 mb-3">par {item.author}</p>
 
-                {/* Prix total ligne */}
-                <span className="text-base font-extrabold text-gray-900">
-                  {(item.price * item.quantity).toFixed(2).replace('.', ',')}€
-                </span>
-                {item.quantity > 1 && (
-                  <span className="text-[10px] text-gray-400">
-                    {item.price.toFixed(2).replace('.', ',')}€ × {item.quantity ?? 1}
+                  {/* Toggle Numérique / Papier */}
+                  <div className="flex gap-1.5">
+                    {(['digital', 'paper'] as CartItemType[]).map(t => (
+                      <button
+                        key={t}
+                        onClick={() => updateType(item.bookId, t)}
+                        className={`text-[10px] font-semibold px-2.5 py-1 rounded-full
+                                    transition-colors ${
+                          item.type === t
+                            ? t === 'digital'
+                              ? 'bg-indigo-500 text-white'
+                              : 'bg-amber-500 text-white'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                        }`}
+                      >
+                        {t === 'digital' ? '📱 Numérique' : '📦 Papier'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Prix + quantité + supprimer */}
+                <div className="flex flex-col items-end justify-between">
+
+                  {/* Prix total de la ligne */}
+                  <span className="text-base font-extrabold text-gray-900">
+                    {(item.price * qty).toFixed(2).replace('.', ',')}€
                   </span>
-                )}
-
-                <div className="flex flex-col items-end gap-1.5 mt-auto">
-
-                  {/* Contrôle quantité — uniquement format papier */}
-                  {item.type === 'paper' && (
-                    <div className="flex items-center gap-1 bg-gray-100 rounded-lg px-1">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.bookId, item.type, item.quantity - 1)
-                        }
-                        className="w-7 h-7 flex items-center justify-center text-gray-600
-                                   hover:text-gray-900 text-base font-bold
-                                   hover:bg-gray-200 rounded-md transition-colors"
-                        aria-label="Diminuer la quantité"
-                      >
-                        −
-                      </button>
-                      <span className="text-xs font-bold w-5 text-center text-gray-900">
-                        {item.quantity ?? 1}
-                      </span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.bookId, item.type, item.quantity + 1)
-                        }
-                        className="w-7 h-7 flex items-center justify-center text-gray-600
-                                   hover:text-gray-900 text-base font-bold
-                                   hover:bg-gray-200 rounded-md transition-colors"
-                        aria-label="Augmenter la quantité"
-                      >
-                        +
-                      </button>
-                    </div>
+                  {qty > 1 && (
+                    <span className="text-[10px] text-gray-400 -mt-0.5">
+                      {item.price.toFixed(2).replace('.', ',')}€ × {qty}
+                    </span>
                   )}
 
-                  {/* Supprimer */}
-                  <button
-                    onClick={() => removeItem(item.bookId, item.type)}
-                    className="text-gray-300 hover:text-red-400 transition-colors text-sm"
-                    title="Supprimer"
-                  >
-                    🗑
-                  </button>
+                  <div className="flex flex-col items-end gap-1.5 mt-auto pt-2">
+
+                    {/* Contrôle quantité — uniquement format papier */}
+                    {item.type === 'paper' && (
+                      <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => updateQuantity(item.bookId, item.type, qty - 1)}
+                          className="w-7 h-7 flex items-center justify-center text-gray-600
+                                     hover:bg-gray-200 hover:text-gray-900 text-base
+                                     font-bold transition-colors"
+                          aria-label="Diminuer"
+                        >
+                          −
+                        </button>
+                        <span className="text-xs font-bold w-6 text-center text-gray-900">
+                          {qty}
+                        </span>
+                        <button
+                          onClick={() => updateQuantity(item.bookId, item.type, qty + 1)}
+                          className="w-7 h-7 flex items-center justify-center text-gray-600
+                                     hover:bg-gray-200 hover:text-gray-900 text-base
+                                     font-bold transition-colors"
+                          aria-label="Augmenter"
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Supprimer */}
+                    <button
+                      onClick={() => removeItem(item.bookId, item.type)}
+                      className="text-gray-300 hover:text-red-400 transition-colors text-sm"
+                      title="Supprimer"
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           <Link
             to="/catalogue"
@@ -212,29 +213,32 @@ export default function CartPage() {
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sticky top-24">
             <h2 className="font-bold text-gray-900 mb-5 text-base">Récapitulatif</h2>
 
-            {/* Lignes articles */}
+            {/* Lignes */}
             <div className="space-y-2 mb-4">
-              {items.map(item => (
-                <div
-                  key={`${item.bookId}-${item.type}`}
-                  className="flex justify-between text-xs text-gray-500"
-                >
-                  <span className="line-clamp-1 flex-1 mr-2">
-                    {item.title}{' '}
-                    <span className={
-                      item.type === 'digital' ? 'text-indigo-400' : 'text-amber-500'
-                    }>
-                      ({item.type === 'digital' ? 'Num.' : 'Papier'})
+              {items.map(item => {
+                const qty = item.quantity ?? 1
+                return (
+                  <div
+                    key={`${item.bookId}-${item.type}`}
+                    className="flex justify-between text-xs text-gray-500"
+                  >
+                    <span className="line-clamp-1 flex-1 mr-2">
+                      {item.title}{' '}
+                      <span className={
+                        item.type === 'digital' ? 'text-indigo-400' : 'text-amber-500'
+                      }>
+                        ({item.type === 'digital' ? 'Num.' : 'Papier'})
+                      </span>
+                      {qty > 1 && (
+                        <span className="text-gray-400"> ×{qty}</span>
+                      )}
                     </span>
-                    {item.quantity > 1 && (
-                      <span className="text-gray-400"> ×{item.quantity ?? 1}</span>
-                    )}
-                  </span>
-                  <span className="shrink-0 font-medium text-gray-700">
-                    {(item.price * item.quantity).toFixed(2).replace('.', ',')}€
-                  </span>
-                </div>
-              ))}
+                    <span className="shrink-0 font-medium text-gray-700">
+                      {(item.price * qty).toFixed(2).replace('.', ',')}€
+                    </span>
+                  </div>
+                )
+              })}
             </div>
 
             <div className="border-t border-gray-100 pt-3 mb-5">
