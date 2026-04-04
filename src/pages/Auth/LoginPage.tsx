@@ -84,7 +84,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[calc(100vh-56px)] flex">
-
       {/* Panel gauche décoratif */}
       <div className="hidden lg:flex flex-col justify-between w-1/2
                       bg-linear-to-br from-indigo-600 to-violet-700 p-12 text-white">
