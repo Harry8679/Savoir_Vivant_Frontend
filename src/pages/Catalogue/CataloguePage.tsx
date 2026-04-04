@@ -215,7 +215,7 @@ export default function CataloguePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex gap-8">
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="w-52 min-w-52 flex-shrink-0 hidden md:block">
+      <aside className="w-52 min-w-52 shrink-0 hidden md:block">
 
         {/* Recherche */}
         <div className="relative mb-7">
@@ -277,7 +277,7 @@ export default function CataloguePage() {
         </div>
 
         {/* Banner abonnement */}
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 to-violet-50
+        <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-indigo-50 to-violet-50
                         border border-indigo-100 flex items-center justify-between gap-4">
           <div>
             <p className="text-sm font-bold text-indigo-700">
@@ -290,7 +290,7 @@ export default function CataloguePage() {
           <Link
             to="/abonnement"
             className="text-xs font-semibold bg-indigo-500 text-white px-4 py-2 rounded-xl
-                       hover:bg-indigo-600 transition-colors whitespace-nowrap flex-shrink-0"
+                       hover:bg-indigo-600 transition-colors whitespace-nowrap shrink-0"
           >
             S'abonner →
           </Link>
