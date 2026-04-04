@@ -12,14 +12,24 @@ const LEVEL_IDS = ['college', 'lycee', 'prepa', 'superieur'] as const
 // ─── BookCard ──────────────────────────────────────────────────────────────────
 
 function BookCard({ book }: { book: Book }) {
-  const { addToCart, hasBook } = useCartStore()
+  const { addItem, hasItem } = useCartStore()
   const [addedFormat, setAddedFormat] = useState<'digital' | 'paper' | null>(null)
   const inCart = hasBook(book._id)
 
   const quickAdd = (e: React.MouseEvent, format: 'digital' | 'paper') => {
     e.preventDefault()
     e.stopPropagation()
-    addToCart(book, format)
+    addItem({
+      bookId:       book._id,
+      title:        book.title,
+      author:       book.author,
+      coverUrl:     book.coverUrl ?? '',
+      slug:         book.slug,
+      type:         format,
+      price:        format === 'digital' ? book.digitalPrice : book.paperPrice,
+      digitalPrice: book.digitalPrice,
+      paperPrice:   book.paperPrice,
+    })
     setAddedFormat(format)
     setTimeout(() => setAddedFormat(null), 1500)
   }
