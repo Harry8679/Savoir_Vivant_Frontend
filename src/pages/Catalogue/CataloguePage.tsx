@@ -41,41 +41,41 @@ function BookCard({ book }: { book: Book }) {
                  hover:border-gray-200 hover:shadow-lg transition-all duration-200"
     >
       {/* Couverture */}
-      <div className="w-24 min-w-24 h-32 rounded-xl shrink-0 overflow-hidden shadow-md">
-        {book.coverUrl ? (
+      <div className="w-24 min-w-24 h-32 rounded-xl shrink-0 overflow-hidden shadow-md relative"
+        style={{
+          background: `linear-gradient(145deg,
+            ${book.collectionId?.color ?? '#6366f1'}dd 0%,
+            ${book.collectionId?.color ?? '#6366f1'}88 60%,
+            ${book.collectionId?.color ?? '#6366f1'}33 100%)`,
+        }}
+      >
+        {/* Pattern décoratif toujours visible en fond */}
+        <div className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg, #fff 0px, #fff 1px, transparent 1px, transparent 8px)`,
+          }}
+        />
+
+        {/* Texte en fond */}
+        <div className="absolute bottom-0 left-0 right-0 p-2 z-10">
+          <p className="text-[7px] font-bold uppercase tracking-widest
+                        text-white/60 mb-0.5 leading-tight">
+            {book.collectionId?.name}
+          </p>
+          <p className="text-[10px] font-bold text-white leading-tight line-clamp-3">
+            {book.title}
+          </p>
+        </div>
+
+        {/* Image par-dessus — masquée si erreur de chargement */}
+        {book.coverUrl && (
           <img
             src={book.coverUrl}
             alt={book.title}
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover z-20"
+            onError={e => { e.currentTarget.style.display = 'none' }}
           />
-        ) : (
-          <div
-            className="w-full h-full flex flex-col justify-end p-2.5 relative"
-            style={{
-              background: `linear-gradient(145deg,
-                ${book.collectionId?.color ?? '#6366f1'}dd 0%,
-                ${book.collectionId?.color ?? '#6366f1'}88 60%,
-                ${book.collectionId?.color ?? '#6366f1'}44 100%)`,
-            }}
-          >
-            {/* Pattern décoratif */}
-            <div className="absolute inset-0 opacity-10"
-              style={{
-                backgroundImage: `repeating-linear-gradient(
-                  45deg, #fff 0px, #fff 1px, transparent 1px, transparent 8px)`,
-              }}
-            />
-            <div className="relative z-10">
-              <p className="text-[7px] font-bold uppercase tracking-widest
-                            text-white/60 mb-1 leading-tight">
-                {book.collectionId?.name}
-              </p>
-              <p className="text-[10px] font-bold text-white leading-tight line-clamp-3">
-                {book.title}
-              </p>
-              <p className="text-[8px] text-white/50 mt-0.5">{book.author}</p>
-            </div>
-          </div>
         )}
       </div>
 
