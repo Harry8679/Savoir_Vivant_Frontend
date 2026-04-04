@@ -29,7 +29,7 @@ export default function ReaderPage() {
 
   const containerRef   = useRef<HTMLDivElement>(null)
   const pageRefs       = useRef<Record<number, HTMLDivElement | null>>({})
-  const refreshTimer   = useRef<ReturnType<typeof setTimeout>>()
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   // ── Fetch signed URL (rafraîchie toutes les 100s) ─────────────────────────
 
