@@ -217,7 +217,10 @@ function StepLivraison({
     if (!hasPhysical) { onNext('', '', 0); return }
     if (!selectedAddress) return
     const carrier = carriers.find(c => c._id === selectedCarrier)
-    onNext(selectedAddress, selectedCarrier, carrier?.price ?? 0)
+    const addr = addresses.find(a => a._id === selectedAddress)
+    const country = addr?.country ?? 'FR'
+    const shippingPrice = carrier?.priceRules.find(r => r.country === country)?.price ?? 0
+    onNext(selectedAddress, selectedCarrier, shippingPrice)
   }
 
   if (loading) return (
