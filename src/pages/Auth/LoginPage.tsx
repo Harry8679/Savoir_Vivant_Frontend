@@ -72,13 +72,14 @@ export default function LoginPage() {
     setLoading(true)
     setApiError(null)
     try {
-      const result = await authService.login(email, password)
-      setAuth(result.user, result.token)
+      const result = await authService.login({ email, password })
+      setAuth(result.user, result.accessToken, result.refreshToken)
       navigate(searchParams.get('redirect') ?? '/catalogue')
-    } catch (err: any) {
-      setApiError(err.message ?? err.response?.data?.message ?? 'Email ou mot de passe incorrect')
-    } finally {
-      setLoading(false)
+    } catch (err: unknown) {
+      const message = err instanceof Error
+        ? err.message
+        : 'Email ou mot de passe incorrect'
+      setApiError(message)
     }
   }
 
