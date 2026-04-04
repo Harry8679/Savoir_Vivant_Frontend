@@ -7,6 +7,7 @@ import { addressService } from '../../services/address.service'
 import { paymentService } from '../../services/payment.service'
 import type { Address } from '../../types/address.types'
 import api from '@/services/api'
+import { Carrier } from '@/services/carrier.service'
 
 type Step = 'livraison' | 'paiement'
 
@@ -334,7 +335,9 @@ function StepLivraison({
                         className="accent-indigo-500" />
                       <div>
                         <p className="text-sm font-semibold text-gray-900">{carrier.name}</p>
-                        <p className="text-xs text-gray-500">{carrier.delay}</p>
+                        <p className="text-xs text-gray-500">
+                          {carrier.estimatedDays.min}–{carrier.estimatedDays.max} jours ouvrés
+                        </p>
                       </div>
                     </div>
                     <span className="text-sm font-bold text-gray-900">
