@@ -43,10 +43,18 @@ function BookCard({ book }: { book: Book }) {
       {/* Couverture */}
       <div className="w-24 min-w-24 h-32 rounded-xl shrink-0 overflow-hidden shadow-md relative"
         style={{
-          background: `linear-gradient(145deg,
-            ${book.collectionId?.color ?? '#6366f1'}dd 0%,
-            ${book.collectionId?.color ?? '#6366f1'}88 60%,
-            ${book.collectionId?.color ?? '#6366f1'}33 100%)`,
+          backgroundColor: book.collectionId?.color ?? '#6366f1',
+          background: (() => {
+            const c = book.collectionId?.color ?? '#6366f1'
+            // Convertit hex en rgb pour rgba()
+            const r = parseInt(c.slice(1,3), 16)
+            const g = parseInt(c.slice(3,5), 16)
+            const b = parseInt(c.slice(5,7), 16)
+            return `linear-gradient(145deg,
+              rgba(${r},${g},${b},0.95) 0%,
+              rgba(${r},${g},${b},0.7) 50%,
+              rgba(${r},${g},${b},0.4) 100%)`
+          })(),
         }}
       >
         {/* Pattern décoratif toujours visible en fond */}
