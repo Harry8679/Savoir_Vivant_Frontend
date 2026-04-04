@@ -14,7 +14,7 @@ const LEVEL_IDS = ['college', 'lycee', 'prepa', 'superieur'] as const
 function BookCard({ book }: { book: Book }) {
   const { addItem, hasItem } = useCartStore()
   const [addedFormat, setAddedFormat] = useState<'digital' | 'paper' | null>(null)
-  const inCart = hasBook(book._id)
+  const inCart = hasItem(book._id, 'digital') || hasItem(book._id, 'paper')
 
   const quickAdd = (e: React.MouseEvent, format: 'digital' | 'paper') => {
     e.preventDefault()
