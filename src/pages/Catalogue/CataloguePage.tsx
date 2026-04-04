@@ -50,32 +50,32 @@ function BookCard({ book }: { book: Book }) {
           />
         ) : (
           <div
-  className="w-full h-full flex flex-col justify-end p-2.5 relative"
-  style={{
-    background: `linear-gradient(145deg,
-      ${book.collectionId?.color ?? '#6366f1'}dd 0%,
-      ${book.collectionId?.color ?? '#6366f1'}88 60%,
-      ${book.collectionId?.color ?? '#6366f1'}44 100%)`,
-  }}
->
-  {/* Pattern décoratif */}
-  <div className="absolute inset-0 opacity-10"
-    style={{
-      backgroundImage: `repeating-linear-gradient(
-        45deg, #fff 0px, #fff 1px, transparent 1px, transparent 8px)`,
-    }}
-  />
-  <div className="relative z-10">
-    <p className="text-[7px] font-bold uppercase tracking-widest
-                  text-white/60 mb-1 leading-tight">
-      {book.collectionId?.name}
-    </p>
-    <p className="text-[10px] font-bold text-white leading-tight line-clamp-3">
-      {book.title}
-    </p>
-    <p className="text-[8px] text-white/50 mt-0.5">{book.author}</p>
-  </div>
-</div>
+            className="w-full h-full flex flex-col justify-end p-2.5 relative"
+            style={{
+              background: `linear-gradient(145deg,
+                ${book.collectionId?.color ?? '#6366f1'}dd 0%,
+                ${book.collectionId?.color ?? '#6366f1'}88 60%,
+                ${book.collectionId?.color ?? '#6366f1'}44 100%)`,
+            }}
+          >
+            {/* Pattern décoratif */}
+            <div className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage: `repeating-linear-gradient(
+                  45deg, #fff 0px, #fff 1px, transparent 1px, transparent 8px)`,
+              }}
+            />
+            <div className="relative z-10">
+              <p className="text-[7px] font-bold uppercase tracking-widest
+                            text-white/60 mb-1 leading-tight">
+                {book.collectionId?.name}
+              </p>
+              <p className="text-[10px] font-bold text-white leading-tight line-clamp-3">
+                {book.title}
+              </p>
+              <p className="text-[8px] text-white/50 mt-0.5">{book.author}</p>
+            </div>
+          </div>
         )}
       </div>
 
