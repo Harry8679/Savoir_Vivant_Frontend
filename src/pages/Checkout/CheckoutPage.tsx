@@ -341,9 +341,11 @@ function StepLivraison({
                       </div>
                     </div>
                     <span className="text-sm font-bold text-gray-900">
-                      {carrier.price === 0
-                        ? 'Gratuit'
-                        : `${carrier.price.toFixed(2).replace('.', ',')}€`}
+                      {(() => {
+                        const rule = carrier.priceRules.find(r => r.country === 'FR')
+                        const price = rule?.price ?? 0
+                        return price === 0 ? 'Gratuit' : `${price.toFixed(2).replace('.', ',')}€`
+                      })()}
                     </span>
                   </label>
                 ))}
