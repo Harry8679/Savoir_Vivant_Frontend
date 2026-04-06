@@ -5,11 +5,11 @@ import { useCartStore } from '../../store/cartStore'
 import { useAuthStore } from '../../store/authStore'
 import { addressService } from '../../services/address.service'
 import { paymentService } from '../../services/payment.service'
+import { carrierService, type Carrier } from '../../services/carrier.service'
 import type { Address } from '../../types/address.types'
-import api from '@/services/api'
-import { Carrier } from '@/services/carrier.service'
 
 type Step = 'livraison' | 'paiement'
+type PaymentMethod = 'stripe' | 'paypal'
 
 const STEPS = [
   { id: 'livraison' as Step, label: 'Livraison', icon: '📦' },
@@ -32,22 +32,16 @@ function CoverImage({ coverUrl, title }: { coverUrl: string; title: string }) {
           }}
         />
         <div className="absolute bottom-0 left-0 right-0 p-1
-                        bg-linear-to-t from-black/30 to-transparent">
-          <p className="text-[7px] font-bold text-white leading-tight line-clamp-2">
-            {title}
-          </p>
+                        bg-gradient-to-t from-black/30 to-transparent">
+          <p className="text-[7px] font-bold text-white leading-tight line-clamp-2">{title}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <img
-      src={coverUrl}
-      alt={title}
-      className="w-full h-full object-cover"
-      onError={() => setError(true)}
-    />
+    <img src={coverUrl} alt={title} className="w-full h-full object-cover"
+      onError={() => setError(true)} />
   )
 }
 
@@ -100,21 +94,16 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
           const qty = item.quantity ?? 1
           return (
             <div key={`${item.bookId}-${item.type}`} className="flex items-center gap-3">
-              {/* Couverture */}
               <div className="w-9 h-12 rounded-lg shrink-0 overflow-hidden shadow-sm">
                 <CoverImage coverUrl={item.coverUrl} title={item.title} />
               </div>
-              {/* Infos */}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-gray-900 line-clamp-1">
-                  {item.title}
-                </p>
+                <p className="text-xs font-semibold text-gray-900 line-clamp-1">{item.title}</p>
                 <p className="text-[10px] text-gray-400">
                   {item.type === 'digital' ? 'Numérique' : 'Papier'}
                   {qty > 1 && ` × ${qty}`}
                 </p>
               </div>
-              {/* Prix */}
               <span className="text-xs font-bold text-gray-900 shrink-0">
                 {(item.price * qty).toFixed(2).replace('.', ',')}€
               </span>
@@ -122,7 +111,6 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
           )
         })}
       </div>
-
       <div className="border-t border-gray-200 pt-3 space-y-1.5">
         <div className="flex justify-between text-xs text-gray-500">
           <span>Sous-total</span>
@@ -151,17 +139,11 @@ function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
 // ─── Formulaire nouvelle adresse ──────────────────────────────────────────────
 
 interface NewAddressForm {
-  fullName:   string
-  phone:      string
-  street:     string
-  city:       string
-  postalCode: string
-  country:    string
+  fullName: string; phone: string; street: string
+  city: string; postalCode: string; country: string
 }
-
 const EMPTY_ADDR: NewAddressForm = {
-  fullName: '', phone: '', street: '',
-  city: '', postalCode: '', country: 'FR',
+  fullName: '', phone: '', street: '', city: '', postalCode: '', country: 'FR',
 }
 
 // ─── Étape 1 : Livraison ──────────────────────────────────────────────────────
@@ -186,7 +168,7 @@ function StepLivraison({
   useEffect(() => {
     Promise.all([
       addressService.getAll(),
-      api.get<{ data: Carrier[] }>('/carriers').then(r => r.data.data),
+      carrierService.getAll(),
     ])
       .then(([addrs, cars]) => {
         setAddresses(addrs)
@@ -217,7 +199,7 @@ function StepLivraison({
     if (!hasPhysical) { onNext('', '', 0); return }
     if (!selectedAddress) return
     const carrier = carriers.find(c => c._id === selectedCarrier)
-    const addr = addresses.find(a => a._id === selectedAddress)
+    const addr    = addresses.find(a => a._id === selectedAddress)
     const country = addr?.country ?? 'FR'
     const shippingPrice = carrier?.priceRules.find(r => r.country === country)?.price ?? 0
     onNext(selectedAddress, selectedCarrier, shippingPrice)
@@ -225,8 +207,7 @@ function StepLivraison({
 
   if (loading) return (
     <div className="flex justify-center py-16">
-      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent
-                      rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
@@ -242,6 +223,7 @@ function StepLivraison({
         </div>
       ) : (
         <>
+          {/* Adresses */}
           <div>
             <h3 className="font-bold text-gray-900 mb-3">Adresse de livraison</h3>
             <div className="space-y-3">
@@ -260,12 +242,8 @@ function StepLivraison({
                   <div className="text-sm">
                     <p className="font-semibold text-gray-900">{addr.fullName}</p>
                     <p className="text-gray-500">{addr.street}</p>
-                    <p className="text-gray-500">
-                      {addr.postalCode} {addr.city}, {addr.country}
-                    </p>
-                    {addr.phone && (
-                      <p className="text-gray-400 text-xs mt-0.5">{addr.phone}</p>
-                    )}
+                    <p className="text-gray-500">{addr.postalCode} {addr.city}, {addr.country}</p>
+                    {addr.phone && <p className="text-gray-400 text-xs mt-0.5">{addr.phone}</p>}
                   </div>
                 </label>
               ))}
@@ -300,8 +278,7 @@ function StepLivraison({
                                  rounded-lg hover:bg-indigo-600 disabled:opacity-50">
                       {saving ? 'Sauvegarde...' : 'Sauvegarder'}
                     </button>
-                    <button
-                      onClick={() => { setShowNewAddress(false); setNewAddr(EMPTY_ADDR) }}
+                    <button onClick={() => { setShowNewAddress(false); setNewAddr(EMPTY_ADDR) }}
                       className="px-4 py-2.5 bg-white border border-gray-200 text-sm
                                  text-gray-600 rounded-lg hover:bg-gray-50">
                       Annuler
@@ -319,6 +296,7 @@ function StepLivraison({
             </div>
           </div>
 
+          {/* Transporteurs */}
           {carriers.length > 0 && (
             <div>
               <h3 className="font-bold text-gray-900 mb-3">Mode de livraison</h3>
@@ -345,9 +323,11 @@ function StepLivraison({
                     </div>
                     <span className="text-sm font-bold text-gray-900">
                       {(() => {
-                        const rule = carrier.priceRules.find(r => r.country === 'FR')
+                        const rule  = carrier.priceRules.find(r => r.country === 'FR')
                         const price = rule?.price ?? 0
-                        return price === 0 ? 'Gratuit' : `${price.toFixed(2).replace('.', ',')}€`
+                        return price === 0
+                          ? 'Gratuit'
+                          : `${price.toFixed(2).replace('.', ',')}€`
                       })()}
                     </span>
                   </label>
@@ -379,21 +359,31 @@ function StepPaiement({
   carrierId: string
   onBack:    () => void
 }) {
-  const { items } = useCartStore()
-  const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState<string | null>(null)
+  const { items }                        = useCartStore()
+  const [loading,       setLoading]      = useState(false)
+  const [error,         setError]        = useState<string | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('stripe')
 
   const handlePay = async () => {
     setLoading(true)
     setError(null)
     try {
-      const firstItem = items[0]
-      if (!firstItem) return
+      const digitalItem = items.find(i => i.type === 'digital')
+      const paperItem   = items.find(i => i.type === 'paper')
 
-      if (firstItem.type === 'digital') {
-        await paymentService.buyDigital(firstItem.bookId)
+      if (paymentMethod === 'stripe') {
+        if (digitalItem) {
+          await paymentService.buyDigital(digitalItem.bookId)
+        } else if (paperItem) {
+          await paymentService.buyPaper(paperItem.bookId, addressId, carrierId)
+        }
       } else {
-        await paymentService.buyPaper(firstItem.bookId, addressId, carrierId)
+        // PayPal
+        if (digitalItem) {
+          await paymentService.buyDigitalPaypal(digitalItem.bookId)
+        } else if (paperItem) {
+          await paymentService.buyPaperPaypal(paperItem.bookId, addressId, carrierId)
+        }
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
@@ -419,9 +409,7 @@ function StepPaiement({
                 <CoverImage coverUrl={item.coverUrl} title={item.title} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 line-clamp-1">
-                  {item.title}
-                </p>
+                <p className="text-sm font-semibold text-gray-900 line-clamp-1">{item.title}</p>
                 <p className="text-xs text-gray-400">
                   {item.type === 'digital' ? '📱 Numérique' : '📦 Papier'}
                   {qty > 1 && ` × ${qty}`}
@@ -435,13 +423,71 @@ function StepPaiement({
         })}
       </div>
 
-      {/* Info Stripe */}
-      <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100">
-        <p className="text-sm font-semibold text-indigo-700 mb-1">
-          🔒 Paiement sécurisé Stripe
+      {/* Sélecteur Stripe / PayPal */}
+      <div>
+        <h3 className="font-bold text-gray-900 text-sm mb-3">Moyen de paiement</h3>
+        <div className="grid grid-cols-2 gap-3">
+
+          {/* Stripe */}
+          <button onClick={() => setPaymentMethod('stripe')}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2
+                        transition-all ${
+              paymentMethod === 'stripe'
+                ? 'border-indigo-500 bg-indigo-50'
+                : 'border-gray-200 bg-white hover:border-gray-300'
+            }`}>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center
+                              justify-center text-white text-xs font-black">
+                S
+              </div>
+              <span className="text-sm font-bold text-gray-900">Stripe</span>
+            </div>
+            <p className="text-[10px] text-gray-400 text-center">Carte bancaire sécurisée</p>
+            {paymentMethod === 'stripe' && (
+              <span className="text-[10px] font-bold text-indigo-600">✓ Sélectionné</span>
+            )}
+          </button>
+
+          {/* PayPal */}
+          <button onClick={() => setPaymentMethod('paypal')}
+            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2
+                        transition-all ${
+              paymentMethod === 'paypal'
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 bg-white hover:border-gray-300'
+            }`}>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-[#003087] rounded-lg flex items-center
+                              justify-center text-white text-[10px] font-black">
+                PP
+              </div>
+              <span className="text-sm font-bold text-gray-900">PayPal</span>
+            </div>
+            <p className="text-[10px] text-gray-400 text-center">Compte PayPal ou carte</p>
+            {paymentMethod === 'paypal' && (
+              <span className="text-[10px] font-bold text-blue-600">✓ Sélectionné</span>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Info sécurité */}
+      <div className={`p-4 rounded-xl border ${
+        paymentMethod === 'paypal'
+          ? 'bg-blue-50 border-blue-100'
+          : 'bg-indigo-50 border-indigo-100'
+      }`}>
+        <p className={`text-sm font-semibold mb-1 ${
+          paymentMethod === 'paypal' ? 'text-blue-700' : 'text-indigo-700'
+        }`}>
+          {paymentMethod === 'paypal' ? '🔵 Paiement sécurisé PayPal' : '🔒 Paiement sécurisé Stripe'}
         </p>
-        <p className="text-xs text-indigo-500">
-          Vous allez être redirigé vers la page de paiement Stripe
+        <p className={`text-xs ${
+          paymentMethod === 'paypal' ? 'text-blue-500' : 'text-indigo-500'
+        }`}>
+          Vous allez être redirigé vers{' '}
+          {paymentMethod === 'paypal' ? 'PayPal' : 'Stripe'}{' '}
           pour finaliser votre commande en toute sécurité.
         </p>
       </div>
@@ -454,21 +500,28 @@ function StepPaiement({
       )}
 
       <button onClick={handlePay} disabled={loading}
-        className="w-full py-3.5 bg-indigo-500 text-white font-bold rounded-xl
-                   hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed
-                   transition-colors text-sm flex items-center justify-center gap-2">
+        className={`w-full py-3.5 text-white font-bold rounded-xl transition-colors
+                    text-sm flex items-center justify-center gap-2
+                    disabled:opacity-50 disabled:cursor-not-allowed ${
+          paymentMethod === 'paypal'
+            ? 'bg-[#003087] hover:bg-[#002070]'
+            : 'bg-indigo-500 hover:bg-indigo-600'
+        }`}>
         {loading ? (
           <>
             <span className="w-4 h-4 border-2 border-white/30 border-t-white
                              rounded-full animate-spin" />
-            Redirection vers Stripe...
+            Redirection...
           </>
-        ) : '🔒 Payer maintenant'}
+        ) : paymentMethod === 'paypal'
+            ? '🔵 Payer avec PayPal'
+            : '🔒 Payer avec Stripe'}
       </button>
 
       <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
         <span>🔒 SSL</span><span>·</span>
         <span>💳 Stripe</span><span>·</span>
+        <span>🔵 PayPal</span><span>·</span>
         <span>🛡 PCI-DSS</span>
       </div>
     </div>
@@ -500,10 +553,8 @@ export default function CheckoutPage() {
   }
 
   return (
-    // ↓ pt-24 pour compenser la Navbar fixe (hauteur 72px)
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-24 pb-10">
       <Stepper current={step} />
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {step === 'livraison' && (
