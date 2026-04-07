@@ -25,7 +25,7 @@ export interface Order {
 
 export const orderService = {
   async getMyOrders(): Promise<Order[]> {
-    const { data } = await api.get<ApiResponse<Order[]>>('/orders/my')
+    const { data } = await api.get<ApiResponse<Order[]>>('/orders/me')
     return data.data
   },
 }
