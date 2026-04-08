@@ -371,12 +371,23 @@ function StepPaiement({
       const digitalItem = items.find(i => i.type === 'digital')
       const paperItem   = items.find(i => i.type === 'paper')
 
-      if (paymentMethod === 'stripe') {
+      /* if (paymentMethod === 'stripe') {
         if (digitalItem) {
           await paymentService.buyDigital(digitalItem.bookId)
         } else if (paperItem) {
           await paymentService.buyPaper(paperItem.bookId, addressId, carrierId)
         }
+      }*/
+      if (paymentMethod === 'stripe') {
+        await paymentService.buyCart(
+          items.map(i => ({
+            bookId:   i.bookId,
+            type:     i.type,
+            quantity: i.quantity ?? 1,
+          })),
+          addressId || undefined,
+          carrierId || undefined,
+        )
       } else {
         // PayPal
         if (digitalItem) {
