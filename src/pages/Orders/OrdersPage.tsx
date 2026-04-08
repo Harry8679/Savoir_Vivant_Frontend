@@ -65,7 +65,12 @@ export default function OrdersPage() {
 
     orderService.getMyOrders()
       // .then(data => setOrders(data as Order[]))
-      .then((data: Order[]) => setOrders(data))
+      // .then((data: Order[]) => setOrders(data))
+      orderService.getMyOrders()
+  .then((data: unknown) => {
+    const list = Array.isArray(data) ? data : (data as any)?.orders ?? []
+    setOrders(list as Order[])
+  })
       .catch(() => setError('Impossible de charger vos commandes.'))
       .finally(() => setLoading(false))
   }, [isAuthenticated, navigate])
