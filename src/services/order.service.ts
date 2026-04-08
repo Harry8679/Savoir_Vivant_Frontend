@@ -1,5 +1,6 @@
+// src/services/order.service.ts
 import api from './api'
-import { ApiResponse } from '@/types/auth.types'
+import type { ApiResponse } from '@/types/auth.types'
 
 export interface OrderItem {
   bookId:    string
@@ -26,6 +27,10 @@ export interface Order {
 export const orderService = {
   async getMyOrders(): Promise<Order[]> {
     const { data } = await api.get<ApiResponse<Order[]>>('/orders/me')
-    return data.data
+    // Sécurise si le backend retourne { orders: [...] } au lieu de [...]
+    const result = data.data
+    return Array.isArray(result)
+      ? result
+      : (result as unknown as { orders?: Order[] })?.orders ?? []
   },
 }
