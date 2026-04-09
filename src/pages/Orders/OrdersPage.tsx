@@ -19,19 +19,6 @@ interface OrderItem {
   quantity:  number
   unitPrice: number
 }
-
-// interface Order {
-//   _id:       string
-//   items:     OrderItem[]
-//   total:     number
-//   status:    OrderStatus
-//   createdAt: string
-//   address?: {
-//     fullName:   string   // ton Address réel utilise fullName
-//     city:       string
-//     postalCode: string
-//   }
-// }
 interface Order {
   _id:       string
   items:     OrderItem[]
