@@ -90,7 +90,7 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 space-y-3">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-8 space-y-3">
         <div className="h-7 w-40 bg-gray-200 rounded animate-pulse mb-6" />
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="h-28 bg-gray-100 rounded-2xl animate-pulse" />
@@ -103,7 +103,7 @@ export default function OrdersPage() {
 
   if (error) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+      <div className="max-w-2xl mx-auto px-4 pt-24 pb-20 text-center">
         <div className="text-5xl mb-4">⚠️</div>
         <p className="text-gray-600 mb-4">{error}</p>
         <button
@@ -121,7 +121,7 @@ export default function OrdersPage() {
 
   if (orders.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+      <div className="max-w-2xl mx-auto px-4 pt-24 pb-20 text-center">
         <div className="text-5xl mb-4">📦</div>
         <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
           Aucune commande
@@ -143,7 +143,7 @@ export default function OrdersPage() {
   // ─── Liste des commandes ───────────────────────────────────────────────────
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-8">
 
       {/* Banner paiement confirmé */}
       {paymentSuccess && (
