@@ -20,14 +20,26 @@ interface OrderItem {
   unitPrice: number
 }
 
+// interface Order {
+//   _id:       string
+//   items:     OrderItem[]
+//   total:     number
+//   status:    OrderStatus
+//   createdAt: string
+//   address?: {
+//     fullName:   string   // ton Address réel utilise fullName
+//     city:       string
+//     postalCode: string
+//   }
+// }
 interface Order {
   _id:       string
   items:     OrderItem[]
-  total:     number
+  totalAmount: number   // ← était "total"
   status:    OrderStatus
   createdAt: string
   address?: {
-    fullName:   string   // ton Address réel utilise fullName
+    fullName:   string
     city:       string
     postalCode: string
   }
@@ -174,8 +186,11 @@ export default function OrdersPage() {
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
                     {status.label}
                   </span>
-                  <span className="text-base font-extrabold text-gray-900">
+                  {/* <span className="text-base font-extrabold text-gray-900">
                     {order.total.toFixed(2).replace('.', ',')}€
+                  </span> */}
+                  <span className="text-base font-extrabold text-gray-900">
+                    {order.totalAmount.toFixed(2).replace('.', ',')}€   {/* ← était order.total */}
                   </span>
                 </div>
               </div>
