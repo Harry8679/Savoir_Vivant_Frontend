@@ -5,8 +5,6 @@ import { useAuthStore } from '../../store/authStore'
 import { useCartStore } from '../../store/cartStore'
 import { orderService } from '../../services/order.service'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
 
 interface OrderItem {
@@ -15,7 +13,7 @@ interface OrderItem {
   coverUrl?: string
   type:      'digital' | 'paper'
   quantity:  number
-  unitPrice: number
+  price:     number
 }
 
 interface Order {
@@ -24,22 +22,20 @@ interface Order {
   totalAmount: number
   status:      OrderStatus
   createdAt:   string
-  address?: {
+  shippingAddress?: {
     fullName:   string
     city:       string
     postalCode: string
   }
 }
 
-const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string }> = {
-  pending:   { label: 'En attente', color: 'bg-amber-100 text-amber-700'   },
-  paid:      { label: 'Payée',      color: 'bg-blue-100 text-blue-700'     },
-  shipped:   { label: 'Expédiée',   color: 'bg-indigo-100 text-indigo-700' },
-  delivered: { label: 'Livrée',     color: 'bg-green-100 text-green-700'   },
-  cancelled: { label: 'Annulée',    color: 'bg-red-100 text-red-700'       },
+const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string; icon: string }> = {
+  pending:   { label: 'En attente', color: 'bg-amber-100 text-amber-700 border-amber-200',   icon: '⏳' },
+  paid:      { label: 'Payée',      color: 'bg-blue-100 text-blue-700 border-blue-200',      icon: '✅' },
+  shipped:   { label: 'Expédiée',   color: 'bg-indigo-100 text-indigo-700 border-indigo-200',icon: '🚚' },
+  delivered: { label: 'Livrée',     color: 'bg-green-100 text-green-700 border-green-200',   icon: '📬' },
+  cancelled: { label: 'Annulée',    color: 'bg-red-100 text-red-700 border-red-200',         icon: '❌' },
 }
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
   const { isAuthenticated } = useAuthStore()
@@ -54,27 +50,19 @@ export default function OrdersPage() {
 
   const paymentSuccess = searchParams.get('payment') === 'success'
 
-  // ── Attend la réhydratation Zustand ──
   useEffect(() => {
-    const unsub = useAuthStore.persist.onFinishHydration(() => {
-      setHydrated(true)
-    })
-    if (useAuthStore.persist.hasHydrated()) {
-      setHydrated(true)
-    }
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true)
     return () => unsub()
   }, [])
 
-  // ── Vide le panier si retour Stripe ──
   useEffect(() => {
     if (paymentSuccess) clearCart()
   }, [paymentSuccess, clearCart])
 
-  // ── Charge les commandes ──
   useEffect(() => {
     if (!hydrated) return
     if (!isAuthenticated) { navigate('/login'); return }
-
     orderService.getMyOrders()
       .then((data: unknown) => {
         const list = Array.isArray(data)
@@ -87,20 +75,18 @@ export default function OrdersPage() {
   }, [hydrated, isAuthenticated, navigate])
 
   // ─── Loading ───────────────────────────────────────────────────────────────
-
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-8 space-y-3">
-        <div className="h-7 w-40 bg-gray-200 rounded animate-pulse mb-6" />
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-28 bg-gray-100 rounded-2xl animate-pulse" />
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-8 space-y-4">
+        <div className="h-8 w-44 bg-gray-200 rounded-lg animate-pulse mb-6" />
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="h-48 bg-gray-100 rounded-2xl animate-pulse" />
         ))}
       </div>
     )
   }
 
   // ─── Erreur ────────────────────────────────────────────────────────────────
-
   if (error) {
     return (
       <div className="max-w-2xl mx-auto px-4 pt-24 pb-20 text-center">
@@ -118,14 +104,12 @@ export default function OrdersPage() {
   }
 
   // ─── Aucune commande ───────────────────────────────────────────────────────
-
   if (orders.length === 0) {
     return (
       <div className="max-w-2xl mx-auto px-4 pt-24 pb-20 text-center">
-        <div className="text-5xl mb-4">📦</div>
-        <h1 className="text-2xl font-extrabold text-gray-900 mb-2">
-          Aucune commande
-        </h1>
+        <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center
+                        justify-center text-4xl mx-auto mb-6">📦</div>
+        <h1 className="text-2xl font-extrabold text-gray-900 mb-2">Aucune commande</h1>
         <p className="text-sm text-gray-500 mb-6">
           Vos commandes apparaîtront ici une fois passées.
         </p>
@@ -141,7 +125,6 @@ export default function OrdersPage() {
   }
 
   // ─── Liste des commandes ───────────────────────────────────────────────────
-
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 pb-8">
 
@@ -149,7 +132,8 @@ export default function OrdersPage() {
       {paymentSuccess && (
         <div className="mb-6 p-4 rounded-2xl bg-green-50 border border-green-200
                         flex items-center gap-3">
-          <span className="text-2xl">✅</span>
+          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center
+                          justify-center text-xl shrink-0">✅</div>
           <div>
             <p className="font-bold text-green-700">Commande confirmée !</p>
             <p className="text-sm text-green-600">
@@ -161,88 +145,113 @@ export default function OrdersPage() {
 
       <h1 className="text-2xl font-extrabold text-gray-900 mb-6">Mes commandes</h1>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {orders.map(order => {
           const status = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
+          const hasDigital = order.items.some(i => i.type === 'digital')
 
           return (
             <div
               key={order._id}
-              className="p-5 rounded-2xl bg-white border border-gray-100 shadow-sm"
+              className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden"
             >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="text-xs font-mono text-gray-400">
-                    #{order._id.slice(-8).toUpperCase()}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {new Date(order.createdAt).toLocaleDateString('fr-FR', {
-                      day: 'numeric', month: 'long', year: 'numeric',
-                    })}
-                  </p>
+              {/* Header commande */}
+              <div className="flex items-center justify-between px-5 py-4
+                              border-b border-gray-50 bg-gray-50/60">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="text-xs font-mono font-bold text-gray-500">
+                      #{order._id.slice(-8).toUpperCase()}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {new Date(order.createdAt).toLocaleDateString('fr-FR', {
+                        day: 'numeric', month: 'long', year: 'numeric',
+                      })}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
-                    {status.label}
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full
+                                   border ${status.color}`}>
+                    {status.icon} {status.label}
                   </span>
                   <span className="text-base font-extrabold text-gray-900">
-                    {order.totalAmount.toFixed(2).replace('.', ',')}€
+                    {order.totalAmount.toFixed(2).replace('.', ',')} €
                   </span>
                 </div>
               </div>
 
               {/* Articles */}
-              <div className="flex flex-wrap gap-2">
+              <div className="divide-y divide-gray-50">
                 {order.items.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-2 text-xs text-gray-600
-                               bg-gray-50 rounded-lg px-2.5 py-1.5"
-                  >
-                    {item.coverUrl ? (
-                      <img
-                        src={item.coverUrl}
-                        alt=""
-                        className="w-5 h-6 rounded object-cover shrink-0"
-                      />
-                    ) : (
-                      <div className="w-5 h-6 rounded bg-indigo-100 shrink-0" />
-                    )}
-                    <span className="font-medium line-clamp-1 max-w-32">{item.title}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
-                      item.type === 'digital'
-                        ? 'bg-indigo-100 text-indigo-600'
-                        : 'bg-amber-100 text-amber-600'
-                    }`}>
-                      {item.type === 'digital' ? 'Num.' : 'Papier'}
-                    </span>
-                    {item.quantity > 1 && (
-                      <span className="text-gray-400">×{item.quantity}</span>
-                    )}
+                  <div key={i} className="flex items-center gap-4 px-5 py-3.5">
+
+                    {/* Cover */}
+                    <div className="w-10 h-14 rounded-lg overflow-hidden shrink-0
+                                    bg-indigo-50 flex items-center justify-center">
+                      {item.coverUrl ? (
+                        <img
+                          src={item.coverUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-lg">📖</span>
+                      )}
+                    </div>
+
+                    {/* Infos */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">
+                        {item.title}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                          item.type === 'digital'
+                            ? 'bg-indigo-100 text-indigo-600'
+                            : 'bg-amber-100 text-amber-600'
+                        }`}>
+                          {item.type === 'digital' ? '📱 Numérique' : '📦 Papier'}
+                        </span>
+                        {item.quantity > 1 && (
+                          <span className="text-xs text-gray-400">× {item.quantity}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Prix */}
+                    <p className="text-sm font-bold text-gray-700 shrink-0">
+                      {(item.price * item.quantity).toFixed(2).replace('.', ',')} €
+                    </p>
                   </div>
                 ))}
               </div>
 
-              {/* Adresse de livraison */}
-              {order.address && (
-                <p className="text-xs text-gray-400 mt-3">
-                  📦 Livré à {order.address.fullName}, {order.address.city}
-                </p>
-              )}
+              {/* Footer */}
+              <div className="px-5 py-3 border-t border-gray-50 bg-gray-50/40
+                              flex items-center justify-between flex-wrap gap-2">
 
-              {/* Lien bibliothèque si numérique payé */}
-              {(order.status === 'paid' || order.status === 'delivered') &&
-                order.items.some(i => i.type === 'digital') && (
-                  <div className="mt-3 pt-3 border-t border-gray-50">
-                    <button
-                      onClick={() => navigate('/library')}
-                      className="text-xs font-semibold text-indigo-500 hover:underline"
-                    >
-                      📖 Accéder aux livres numériques →
-                    </button>
-                  </div>
+                {/* Adresse */}
+                {order.shippingAddress ? (
+                  <p className="text-xs text-gray-400">
+                    📍 {order.shippingAddress.fullName} — {order.shippingAddress.city}{' '}
+                    {order.shippingAddress.postalCode}
+                  </p>
+                ) : (
+                  <span />
                 )}
+
+                {/* CTA bibliothèque */}
+                {(order.status === 'paid' || order.status === 'delivered') && hasDigital && (
+                  <button
+                    onClick={() => navigate('/library')}
+                    className="text-xs font-semibold text-indigo-500 hover:text-indigo-700
+                               flex items-center gap-1 transition-colors"
+                  >
+                    📚 Accéder à ma bibliothèque →
+                  </button>
+                )}
+              </div>
             </div>
           )
         })}
