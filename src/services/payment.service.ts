@@ -29,12 +29,12 @@ export const paymentService = {
   // ── PayPal ──────────────────────────────────────────────────────────────────
 
   async buyDigitalPaypal(bookId: string): Promise<void> {
-    const { data } = await api.post('/payments/paypal/digital', { bookId })
+    const { data } = await api.post('/payments/paypal/checkout/digital', { bookId })  // ← /checkout/ ajouté
     window.location.href = data.data.url
   },
 
   async buyPaperPaypal(bookId: string, addressId: string, carrierId: string): Promise<void> {
-    const { data } = await api.post('/payments/paypal/paper', {
+    const { data } = await api.post('/payments/paypal/checkout/paper', {  // ← /checkout/ ajouté
       bookId, addressId, carrierId,
     })
     window.location.href = data.data.url
