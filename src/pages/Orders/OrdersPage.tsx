@@ -186,9 +186,6 @@ export default function OrdersPage() {
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.color}`}>
                     {status.label}
                   </span>
-                  {/* <span className="text-base font-extrabold text-gray-900">
-                    {order.total.toFixed(2).replace('.', ',')}€
-                  </span> */}
                   <span className="text-base font-extrabold text-gray-900">
                     {order.totalAmount.toFixed(2).replace('.', ',')}€   {/* ← était order.total */}
                   </span>
