@@ -5,9 +5,7 @@ import { useAuthStore } from '../../store/authStore'
 import { useCartStore } from '../../store/cartStore'
 import { orderService } from '../../services/order.service'
 
-// ─── Types alignés sur ton backend ────────────────────────────────────────────
-// Address réel : { fullName, street, city, postalCode, country }
-// OrderItem    : adapte selon ce que retourne ton order.service
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
 
@@ -15,16 +13,17 @@ interface OrderItem {
   bookId:    string
   title:     string
   coverUrl?: string
-  type:      'digital' | 'paper'   // ton CartItem utilise "type" pas "format"
+  type:      'digital' | 'paper'
   quantity:  number
   unitPrice: number
 }
+
 interface Order {
-  _id:       string
-  items:     OrderItem[]
-  totalAmount: number   // ← était "total"
-  status:    OrderStatus
-  createdAt: string
+  _id:         string
+  items:       OrderItem[]
+  totalAmount: number
+  status:      OrderStatus
+  createdAt:   string
   address?: {
     fullName:   string
     city:       string
@@ -43,23 +42,37 @@ const STATUS_CONFIG: Record<OrderStatus, { label: string; color: string }> = {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
-  const { isAuthenticated }   = useAuthStore()
-  const { clearCart }         = useCartStore()
-  const navigate              = useNavigate()
-  const [searchParams]        = useSearchParams()
+  const { isAuthenticated } = useAuthStore()
+  const { clearCart }       = useCartStore()
+  const navigate            = useNavigate()
+  const [searchParams]      = useSearchParams()
 
-  const [orders,  setOrders]  = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState<string | null>(null)
+  const [orders,   setOrders]   = useState<Order[]>([])
+  const [loading,  setLoading]  = useState(true)
+  const [error,    setError]    = useState<string | null>(null)
+  const [hydrated, setHydrated] = useState(false)
 
-  // Détecte le retour depuis Stripe (?payment=success)
   const paymentSuccess = searchParams.get('payment') === 'success'
 
+  // ── Attend la réhydratation Zustand ──
+  useEffect(() => {
+    const unsub = useAuthStore.persist.onFinishHydration(() => {
+      setHydrated(true)
+    })
+    if (useAuthStore.persist.hasHydrated()) {
+      setHydrated(true)
+    }
+    return () => unsub()
+  }, [])
+
+  // ── Vide le panier si retour Stripe ──
   useEffect(() => {
     if (paymentSuccess) clearCart()
   }, [paymentSuccess, clearCart])
 
+  // ── Charge les commandes ──
   useEffect(() => {
+    if (!hydrated) return
     if (!isAuthenticated) { navigate('/login'); return }
 
     orderService.getMyOrders()
@@ -71,7 +84,7 @@ export default function OrdersPage() {
       })
       .catch(() => setError('Impossible de charger vos commandes.'))
       .finally(() => setLoading(false))
-  }, [isAuthenticated, navigate])
+  }, [hydrated, isAuthenticated, navigate])
 
   // ─── Loading ───────────────────────────────────────────────────────────────
 
@@ -174,7 +187,7 @@ export default function OrdersPage() {
                     {status.label}
                   </span>
                   <span className="text-base font-extrabold text-gray-900">
-                    {order.totalAmount.toFixed(2).replace('.', ',')}€   {/* ← était order.total */}
+                    {order.totalAmount.toFixed(2).replace('.', ',')}€
                   </span>
                 </div>
               </div>
