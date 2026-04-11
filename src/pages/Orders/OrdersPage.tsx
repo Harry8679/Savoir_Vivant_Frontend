@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useCartStore } from '../../store/cartStore'
 import { orderService } from '../../services/order.service'
+import { paymentService } from '../../services/payment.service'
 
 type OrderStatus = 'pending' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
 
@@ -60,19 +61,49 @@ export default function OrdersPage() {
     if (paymentSuccess) clearCart()
   }, [paymentSuccess, clearCart])
 
+  // useEffect(() => {
+  //   if (!hydrated) return
+  //   if (!isAuthenticated) { navigate('/login'); return }
+  //   orderService.getMyOrders()
+  //     .then((data: unknown) => {
+  //       const list = Array.isArray(data)
+  //         ? data
+  //         : (data as Record<string, unknown>)?.orders ?? []
+  //       setOrders(list as Order[])
+  //     })
+  //     .catch(() => setError('Impossible de charger vos commandes.'))
+  //     .finally(() => setLoading(false))
+  // }, [hydrated, isAuthenticated, navigate])
+  // Dans le useEffect qui charge les commandes, avant orderService.getMyOrders()
   useEffect(() => {
     if (!hydrated) return
     if (!isAuthenticated) { navigate('/login'); return }
-    orderService.getMyOrders()
-      .then((data: unknown) => {
-        const list = Array.isArray(data)
-          ? data
-          : (data as Record<string, unknown>)?.orders ?? []
-        setOrders(list as Order[])
-      })
-      .catch(() => setError('Impossible de charger vos commandes.'))
-      .finally(() => setLoading(false))
-  }, [hydrated, isAuthenticated, navigate])
+
+    const token  = searchParams.get('token')
+    const method = searchParams.get('method')
+
+    const load = async () => {
+      // Capture PayPal si retour depuis PayPal
+      if (method === 'paypal' && token) {
+        try {
+          await paymentService.capturePaypal(token)
+        } catch (e) {
+          console.error('Capture PayPal échouée', e)
+        }
+      }
+
+      orderService.getMyOrders()
+        .then((data: unknown) => {
+          // const list = Array.isArray(data) ? data : (data as any)?.orders ?? []
+          const list = Array.isArray(data) ? data : (data as Record<string, unknown>)?.orders ?? []
+          setOrders(list as Order[])
+        })
+        .catch(() => setError('Impossible de charger vos commandes.'))
+        .finally(() => setLoading(false))
+    }
+
+    load()
+  }, [hydrated, isAuthenticated, navigate, searchParams])
 
   // ─── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
