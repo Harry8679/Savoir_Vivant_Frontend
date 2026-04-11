@@ -389,12 +389,17 @@ function StepPaiement({
           carrierId || undefined,
         )
       } else {
+        await paymentService.buyCartPaypal(
+    items.map(i => ({ bookId: i.bookId, type: i.type, quantity: i.quantity ?? 1 })),
+    addressId || undefined,
+    carrierId || undefined,
+  )
         // PayPal
-        if (digitalItem) {
-          await paymentService.buyDigitalPaypal(digitalItem.bookId)
-        } else if (paperItem) {
-          await paymentService.buyPaperPaypal(paperItem.bookId, addressId, carrierId)
-        }
+        // if (digitalItem) {
+        //   await paymentService.buyDigitalPaypal(digitalItem.bookId)
+        // } else if (paperItem) {
+        //   await paymentService.buyPaperPaypal(paperItem.bookId, addressId, carrierId)
+        // }
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
