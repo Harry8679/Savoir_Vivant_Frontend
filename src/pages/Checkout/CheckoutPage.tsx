@@ -368,8 +368,8 @@ function StepPaiement({
     setLoading(true)
     setError(null)
     try {
-      const digitalItem = items.find(i => i.type === 'digital')
-      const paperItem   = items.find(i => i.type === 'paper')
+      // const digitalItem = items.find(i => i.type === 'digital')
+      // const paperItem   = items.find(i => i.type === 'paper')
 
       /* if (paymentMethod === 'stripe') {
         if (digitalItem) {
