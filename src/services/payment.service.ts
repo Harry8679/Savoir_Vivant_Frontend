@@ -52,15 +52,15 @@ export const paymentService = {
   },
 
   async buyCartPaypal(
-  items: { bookId: string; type: 'digital' | 'paper'; quantity: number }[],
-  addressId?: string,
-  carrierId?: string,
-): Promise<void> {
-  const { data } = await api.post('/payments/paypal/checkout/cart', { items, addressId, carrierId })
-  window.location.href = data.data.url
-},
+    items: { bookId: string; type: 'digital' | 'paper'; quantity: number }[],
+    addressId?: string,
+    carrierId?: string,
+  ): Promise<void> {
+    const { data } = await api.post('/payments/paypal/checkout/cart', { items, addressId, carrierId })
+    window.location.href = data.data.url
+  },
 
-async capturePaypal(token: string): Promise<void> {
-  await api.post(`/payments/paypal/capture?token=${token}`)
-},
+  async capturePaypal(token: string): Promise<void> {
+    await api.post(`/payments/paypal/capture?token=${token}`)
+  },
 }
