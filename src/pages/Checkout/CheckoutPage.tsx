@@ -390,10 +390,10 @@ function StepPaiement({
         )
       } else {
         await paymentService.buyCartPaypal(
-    items.map(i => ({ bookId: i.bookId, type: i.type, quantity: i.quantity ?? 1 })),
-    addressId || undefined,
-    carrierId || undefined,
-  )
+        items.map(i => ({ bookId: i.bookId, type: i.type, quantity: i.quantity ?? 1 })),
+        addressId || undefined,
+        carrierId || undefined,
+      )
         // PayPal
         // if (digitalItem) {
         //   await paymentService.buyDigitalPaypal(digitalItem.bookId)
