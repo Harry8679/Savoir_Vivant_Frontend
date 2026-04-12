@@ -154,7 +154,7 @@ export default function Navbar() {
                     { label: 'Mon profil',      href: '/profile',      icon: '👤' },
                     { label: 'Ma bibliothèque', href: '/library',      icon: '📚' },
                     { label: 'Mes commandes',   href: '/orders',       icon: '📦' },
-                    { label: 'Mon abonnement',  href: '/subscription', icon: '♾️' },
+                    { label: 'Mon abonnement',  href: '/abonnement', icon: '♾️' },
                   ].map(item => (
                     <Link key={item.href} to={item.href}
                       onClick={() => setUserMenu(false)}
