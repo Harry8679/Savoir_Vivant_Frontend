@@ -227,7 +227,7 @@ export default function Navbar() {
               <Link to="/profile"      onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mon profil</Link>
               <Link to="/library"      onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Ma bibliothèque</Link>
               <Link to="/orders"       onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mes commandes</Link>
-              <Link to="/subscription" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mon abonnement</Link>
+              <Link to="/abonnment" onClick={() => setOpen(false)} style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}>Mon abonnement</Link>
               <button onClick={() => { setOpen(false); logout() }} style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', padding: 0 }}>
                 Se déconnecter
               </button>
