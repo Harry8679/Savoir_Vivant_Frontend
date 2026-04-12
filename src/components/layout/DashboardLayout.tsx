@@ -6,7 +6,7 @@ const navItems = [
   { href: '/profile',      icon: '◈', label: 'Mon profil' },
   { href: '/library',      icon: '◎', label: 'Bibliothèque' },
   { href: '/orders',       icon: '◷', label: 'Commandes' },
-  { href: '/subscription', icon: '◈', label: 'Abonnement' },
+  { href: '/abonnement', icon: '◈', label: 'Abonnement' },
   { href: '/settings',     icon: '◉', label: 'Paramètres' },
   { href: '/settings/addresses', icon: '📍', label: 'Mes adresses' },
 ]
