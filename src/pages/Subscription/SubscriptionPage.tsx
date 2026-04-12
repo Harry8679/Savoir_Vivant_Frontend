@@ -1,7 +1,10 @@
-import { useState } from 'react'
+// src/pages/Subscription/SubscriptionPage.tsx
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import DashboardLayout from '@components/layout/DashboardLayout'
 import { useAuthStore } from '@store/authStore'
 import { paymentService } from '@services/payment.service'
+import api from '@services/api'
 
 const plans = [
   {
@@ -36,11 +39,33 @@ const features = [
 ]
 
 export default function SubscriptionPage() {
-  const { user }   = useAuthStore()
-  const isActive   = user?.subscriptionStatus === 'active'
-  const [selected, setSelected] = useState<'monthly' | 'yearly'>('yearly')
-  const [paying, setPaying]     = useState(false)
+  const { user, updateUser }        = useAuthStore()
+  const isActive                    = user?.subscriptionStatus === 'active'
+  const [selected, setSelected]     = useState<'monthly' | 'yearly'>('yearly')
+  const [paying,   setPaying]       = useState(false)
   const [cancelling, setCancelling] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const [searchParams]              = useSearchParams()
+
+  const paymentSuccess   = searchParams.get('payment') === 'success'
+  const paymentCancelled = searchParams.get('payment') === 'cancelled'
+
+  // Rafraîchit le profil après retour Stripe (laisse le webhook 2s)
+  useEffect(() => {
+    if (!paymentSuccess) return
+    setRefreshing(true)
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await api.get('/users/me')
+        if (data?.data) updateUser(data.data)
+      } catch (e) {
+        console.error('Refresh user failed', e)
+      } finally {
+        setRefreshing(false)
+      }
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [paymentSuccess, updateUser])
 
   const handleSubscribe = async () => {
     try {
@@ -67,8 +92,40 @@ export default function SubscriptionPage() {
   return (
     <DashboardLayout
       title="Mon abonnement"
-      subtitle={isActive ? 'Votre abonnement est actif · Accès illimité à toute la bibliothèque' : 'Débloquez toute la bibliothèque SavoirVivant'}
+      subtitle={isActive
+        ? 'Votre abonnement est actif · Accès illimité à toute la bibliothèque'
+        : 'Débloquez toute la bibliothèque SavoirVivant'}
     >
+
+      {/* Banner paiement confirmé */}
+      {paymentSuccess && (
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '12px', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ fontSize: '1.5rem' }}>✅</span>
+          <div>
+            <p style={{ fontWeight: 700, color: '#10b981', fontSize: '0.9rem' }}>
+              {refreshing ? 'Activation en cours...' : 'Abonnement activé !'}
+            </p>
+            <p style={{ fontSize: '0.8rem', color: '#6ee7b7' }}>
+              {refreshing
+                ? 'Nous mettons à jour votre compte...'
+                : 'Vous avez maintenant accès à toute la bibliothèque.'}
+            </p>
+          </div>
+          {refreshing && (
+            <div style={{ marginLeft: 'auto', width: '20px', height: '20px', border: '2px solid rgba(16,185,129,0.3)', borderTop: '2px solid #10b981', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+          )}
+        </div>
+      )}
+
+      {/* Banner paiement annulé */}
+      {paymentCancelled && (
+        <div style={{ padding: '1rem 1.25rem', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '12px', marginBottom: '1.5rem' }}>
+          <p style={{ fontWeight: 600, color: '#ef4444', fontSize: '0.875rem' }}>
+            Paiement annulé — aucun montant débité.
+          </p>
+        </div>
+      )}
+
       {/* Statut actif */}
       {isActive && (
         <div style={{ padding: '1.5rem', background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.03))', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '16px', marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -103,7 +160,7 @@ export default function SubscriptionPage() {
         ))}
       </div>
 
-      {/* Plans */}
+      {/* Plans — masqués si abonnement actif */}
       {!isActive && (
         <>
           <div style={{ marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
@@ -143,8 +200,13 @@ export default function SubscriptionPage() {
           <button
             onClick={handleSubscribe}
             disabled={paying}
-            style={{ width: '100%', padding: '1rem', background: paying ? 'var(--color-surface-2)' : selected === 'yearly' ? '#f59e0b' : 'var(--color-primary)', color: paying ? 'var(--color-text-muted)' : selected === 'yearly' ? '#000' : '#fff', border: 'none', borderRadius: '12px', fontSize: '1rem', fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s' }}>
-            {paying ? 'Redirection vers Stripe...' : `Commencer l'abonnement ${selected === 'yearly' ? 'annuel · 79€' : 'mensuel · 9€/mois'}`}
+            style={{ width: '100%', padding: '1rem', background: paying ? 'var(--color-surface-2)' : selected === 'yearly' ? '#f59e0b' : 'var(--color-primary)', color: paying ? 'var(--color-text-muted)' : selected === 'yearly' ? '#000' : '#fff', border: 'none', borderRadius: '12px', fontSize: '1rem', fontWeight: 700, cursor: paying ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-body)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            {paying ? (
+              <>
+                <span style={{ width: '16px', height: '16px', border: '2px solid rgba(0,0,0,0.2)', borderTop: '2px solid currentColor', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                Redirection vers Stripe...
+              </>
+            ) : `Commencer l'abonnement ${selected === 'yearly' ? 'annuel · 79€' : 'mensuel · 9€/mois'}`}
           </button>
         </>
       )}
