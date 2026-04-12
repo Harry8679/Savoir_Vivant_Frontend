@@ -289,7 +289,7 @@ export default function CartPage() {
                   Accédez à tous les livres avec l'abonnement
                 </p>
                 <Link
-                  to="/subscription"
+                  to="/abonnement"
                   className="block w-full py-2.5 bg-indigo-50 text-indigo-600 font-semibold
                              rounded-xl text-xs text-center hover:bg-indigo-100 transition-colors"
                 >
