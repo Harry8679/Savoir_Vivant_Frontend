@@ -69,7 +69,7 @@ export default function LibraryPage() {
             Parcourir le catalogue →
           </button>
           <button
-            onClick={() => navigate('/subscription')}
+            onClick={() => navigate('/abonnement')}
             className="px-6 py-2.5 bg-white border border-indigo-200 text-indigo-600
                        font-semibold rounded-xl text-sm hover:bg-indigo-50 transition-colors"
           >
