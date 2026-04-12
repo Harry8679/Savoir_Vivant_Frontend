@@ -47,7 +47,7 @@
             { path: 'profile',      element: <ProfilePage /> },
             { path: 'library',      element: <LibraryPage /> },
             { path: 'orders',       element: <OrdersPage /> },
-            { path: 'subscription', element: <SubscriptionPage /> },
+            { path: 'abonnement', element: <SubscriptionPage /> },
             { path: 'settings',     element: <SettingsPage /> },
             { path: 'checkout/success',  element: <CheckoutSuccessPage /> },
           ],
