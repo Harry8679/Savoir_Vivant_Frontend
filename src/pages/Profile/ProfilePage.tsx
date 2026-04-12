@@ -90,7 +90,7 @@ export default function ProfilePage() {
         {[
           { to: '/library',            icon: '📚', label: 'Ma bibliothèque' },
           { to: '/orders',             icon: '📦', label: 'Mes commandes'   },
-          { to: '/subscription',       icon: '∞',  label: 'Abonnement'      },
+          { to: '/abonnement',       icon: '∞',  label: 'Abonnement'      },
           { to: '/settings/addresses', icon: '📍', label: 'Mes adresses'    },
         ].map(item => (
           <Link
