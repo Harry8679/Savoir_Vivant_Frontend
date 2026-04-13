@@ -60,12 +60,12 @@ export const bookService = {
   },
 
   async getMyLibrary(): Promise<Book[]> {
-  const { data } = await api.get<ApiResponse<Book[]>>('/books/me/library')
-  return data.data
-},
+    const { data } = await api.get<ApiResponse<Book[]>>('/books/me/library')
+    return data.data
+  },
 
-async getReadUrl(bookId: string): Promise<{ url: string }> {
-  const { data } = await api.get<ApiResponse<{ url: string }>>(`/books/${bookId}/read`)
-  return data.data
-},
+  async getReadUrl(bookId: string): Promise<{ url: string }> {
+    const { data } = await api.get<ApiResponse<{ url: string }>>(`/books/${bookId}/read`)
+    return data.data
+  },
 }
