@@ -26,17 +26,24 @@ export default function LibraryPage() {
   }, [paymentSuccess, clearCart])
 
   useEffect(() => {
-    // user.subscriptionStatus est le vrai champ (pas user.subscription.status)
-    const isSubscribed = user?.subscriptionStatus === 'active'
-
-    bookService.getAll({}).then(({ books: all }) => {
-      const accessible = isSubscribed
-        ? all.filter(b => b.isAvailableInSubscription)
-        : [] // sans abonnement : la liste vient des achats (voir note ci-dessous)
-
-      setBooks(accessible)
-    }).finally(() => setLoading(false))
-  }, [user])
+  const isSubscribed = user?.subscriptionStatus === 'active'
+  const load = async () => {
+    try {
+      if (isSubscribed) {
+        const { books: all } = await bookService.getAll({})
+        setBooks(all.filter(b => b.isAvailableInSubscription))
+      } else {
+        const library = await bookService.getMyLibrary()
+        setBooks(library)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+  load()
+}, [user])
 
   // ── Note : si tu as un service pour les livres achetés, remplace par :
   // ownedBookService.getMyBooks().then(setBooks).finally(...)
