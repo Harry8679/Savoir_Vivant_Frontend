@@ -54,10 +54,10 @@ export const bookService = {
   },
 
   // Dans src/services/book.service.ts, ajoute cette méthode :
-  async getReadUrl(bookId: string): Promise<{ url: string }> {
-    const { data } = await api.get<ApiResponse<{ url: string }>>(`/books/${bookId}/read-url`)
-    return data.data
-  },
+  // async getReadUrl(bookId: string): Promise<{ url: string }> {
+  //   const { data } = await api.get<ApiResponse<{ url: string }>>(`/books/${bookId}/read-url`)
+  //   return data.data
+  // },
 
   async getMyLibrary(): Promise<Book[]> {
     const { data } = await api.get<ApiResponse<Book[]>>('/books/me/library')
