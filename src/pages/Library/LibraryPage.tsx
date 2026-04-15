@@ -165,7 +165,7 @@ export default function LibraryPage() {
                 className="group text-left"
               >
                 {/* Couverture */}
-                <div className="aspect-[2/3] rounded-xl overflow-hidden mb-2 shadow-md
+                <div className="aspect-2/3 rounded-xl overflow-hidden mb-2 shadow-md
                                 relative transition-transform group-hover:scale-105">
                   {book.coverUrl ? (
                     <img
