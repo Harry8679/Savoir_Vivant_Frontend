@@ -27,6 +27,7 @@
   import CheckoutPage from '@/pages/Checkout/CheckoutPage'
   import CartPage from '@/pages/Cart/CartPage'
   import CheckoutSuccessPage from '@/pages/Checkout/CheckoutSuccessPage'
+import ReaderPage from '@/pages/Reader/ReaderPage'
 
   export const router = createBrowserRouter([
     {
