@@ -50,6 +50,7 @@
             { path: 'abonnement', element: <SubscriptionPage /> },
             { path: 'settings',     element: <SettingsPage /> },
             { path: 'checkout/success',  element: <CheckoutSuccessPage /> },
+            { path: 'reader/:bookId', element: <ReaderPage /> },
           ],
         },
       ],
