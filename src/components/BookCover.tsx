@@ -64,7 +64,7 @@ export default function BookCover({ book, showOverlay = false }: BookCoverProps)
 
       {/* ─── Overlay "Lire" au hover (optionnel) ─────────────────────── */}
       {showOverlay && (
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20
+        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20
                         to-transparent opacity-0 group-hover:opacity-100
                         transition-opacity duration-200
                         flex items-end justify-center pb-4">
