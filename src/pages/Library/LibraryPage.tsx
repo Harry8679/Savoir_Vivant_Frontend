@@ -195,7 +195,7 @@ export default function LibraryPage() {
 
                 {/* Badge abonnement si applicable */}
                 {isSubscribed && book.isAvailableInSubscription && (
-                  <div className="absolute top-2 left-2 bg-gradient-to-r from-indigo-500
+                  <div className="absolute top-2 left-2 bg-linear-to-r from-indigo-500
                                   to-purple-500 text-[9px] font-bold text-white px-2 py-1
                                   rounded-full shadow">
                     ∞
