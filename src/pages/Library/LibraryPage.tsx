@@ -90,7 +90,7 @@ export default function LibraryPage() {
 
       {/* Banner paiement confirmé */}
       {paymentSuccess && (
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-green-50
+        <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-emerald-50 to-green-50
                         border border-emerald-200 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center
                           justify-center text-xl">✅</div>
