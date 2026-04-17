@@ -105,9 +105,9 @@ export default function LibraryPage() {
 
       {/* Banner abonnement actif */}
       {isSubscribed && (
-        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50
+        <div className="mb-6 p-4 rounded-2xl bg-linear-to-r from-indigo-50 via-purple-50
                         to-indigo-50 border border-indigo-100 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500
+          <div className="w-10 h-10 rounded-full bg-linear-to-br from-indigo-500
                           to-purple-500 flex items-center justify-center text-white text-lg
                           shadow-md">∞</div>
           <div>
