@@ -53,9 +53,9 @@ export default function LibraryPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 pt-24 pb-20 text-center">
         <div className="relative w-28 h-28 mx-auto mb-8">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br
+          <div className="absolute inset-0 rounded-3xl bg-linear-to-br
                           from-indigo-400 to-purple-500 rotate-6 opacity-70" />
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br
+          <div className="absolute inset-0 rounded-3xl bg-linear-to-br
                           from-indigo-500 to-purple-600 -rotate-3 flex items-center
                           justify-center text-5xl shadow-xl">
             📚
